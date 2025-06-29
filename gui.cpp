@@ -7,7 +7,8 @@
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnAplicar, hBtnBuscar, hListResult, hEditEntrada;
+    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
+    static HWND hComboPrioridade, hBtnAplicarPrioridade;
     switch (msg) {
     case WM_CREATE: {
         hBtnAlta = CreateWindowW(L"BUTTON", L"Prioridade Alta",
@@ -22,10 +23,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             180, 60, 180, 30,
             hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
-        hBtnAplicar = CreateWindowW(L"BUTTON", L"Aplicar Alta (selecionados)",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            370, 60, 230, 30,
-            hwnd, (HMENU)ID_BTN_APLICAR_SELECIONADOS, nullptr, nullptr);
 
         // Campo de texto de entrada (Edit)
         hEditEntrada = CreateWindowW(L"EDIT", L"",
@@ -33,10 +30,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             180, 20, 350, 30,
             hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
 
+        // ComboBox de prioridade
+        hComboPrioridade = CreateWindowW(L"COMBOBOX", nullptr,
+            WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
+            370, 20, 200, 300,
+            hwnd, (HMENU)ID_COMBO_PRIORIDADE, nullptr, nullptr);
+        SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Baixa (IDLE)");
+        SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Normal");
+        SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Alta");
+        SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Acima do normal");
+        SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Tempo real");
+        SendMessageW(hComboPrioridade, CB_SETCURSEL, 2, 0); // seleciona "Alta" por padrão
+
+        // Botão Aplicar Prioridade
+        hBtnAplicarPrioridade = CreateWindowW(L"BUTTON", L"Aplicar Prioridade",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            580, 20, 120, 30,
+            hwnd, (HMENU)ID_BTN_APLICAR_PRIORIDADE, nullptr, nullptr);
+
         // Botão Buscar
         hBtnBuscar = CreateWindowW(L"BUTTON", L"🔍 Buscar",
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            540, 20, 80, 30,
+            540, 60, 80, 30,
             hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
 
         // ListView
@@ -74,7 +89,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     case WM_COMMAND: {
         int wmId = LOWORD(wParam);
-        if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_APLICAR_SELECIONADOS || wmId == ID_BTN_BUSCAR) {
+        if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_BUSCAR || wmId == ID_BTN_APLICAR_PRIORIDADE) {
             TratarEventoBotao(hwnd, wParam);
         }
         break;

@@ -9,6 +9,8 @@
 #define ID_BTN_APLICAR_SELECIONADOS 2004
 #define ID_BTN_BUSCAR   2005
 #define ID_EDIT_ENTRADA 3001
+#define ID_COMBO_PRIORIDADE 3002
+#define ID_BTN_APLICAR_PRIORIDADE 2006
 
 // Função que cria a janela principal
 void CriarJanela(HINSTANCE hInstance, int nCmdShow);

@@ -25,7 +25,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 2048);
     std::wstring texto(buffer);
 
-    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR) {
+    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE) {
         MessageBoxW(hwnd, L"Digite ao menos um nome de processo.", L"Aviso", MB_OK | MB_ICONWARNING);
         return;
     }
@@ -45,7 +45,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     }
 
     HWND hLista = GetListaResultados(hwnd);
-    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR) ListView_DeleteAllItems(hLista);
+    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE) ListView_DeleteAllItems(hLista);
 
     switch (LOWORD(wParam)) {
     case ID_BTN_ALTA:
@@ -71,25 +71,36 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         break;
     }
     case ID_BTN_APLICAR_SELECIONADOS: {
-        if (!hLista) break;
+        // Botão antigo, pode ser removido futuramente
+        break;
+    }
+    case ID_BTN_APLICAR_PRIORIDADE: {
+        HWND hCombo = GetDlgItem(hwnd, ID_COMBO_PRIORIDADE);
+        if (!hLista || !hCombo) break;
+        int selecao = (int)SendMessageW(hCombo, CB_GETCURSEL, 0, 0);
+        DWORD prioridade = NORMAL_PRIORITY_CLASS;
+        switch (selecao) {
+            case 0: prioridade = IDLE_PRIORITY_CLASS; break;
+            case 1: prioridade = NORMAL_PRIORITY_CLASS; break;
+            case 2: prioridade = HIGH_PRIORITY_CLASS; break;
+            case 3: prioridade = ABOVE_NORMAL_PRIORITY_CLASS; break;
+            case 4: prioridade = REALTIME_PRIORITY_CLASS; break;
+            default: break;
+        }
         int count = ListView_GetItemCount(hLista);
-        int selecionados = 0;
+        int alterados = 0;
         for (int i = 0; i < count; ++i) {
             if (ListView_GetItemState(hLista, i, LVIS_SELECTED) & LVIS_SELECTED) {
                 wchar_t buffer[260];
                 ListView_GetItemText(hLista, i, 0, buffer, 260);
-                bool ok = AlterarPrioridade(buffer, HIGH_PRIORITY_CLASS);
+                bool ok = AlterarPrioridade(buffer, prioridade);
                 std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
                 ListView_SetItemText(hLista, i, 1, (LPWSTR)status.c_str());
-                ++selecionados;
+                ++alterados;
             }
         }
-        if (selecionados == 0) {
-            MessageBoxW(hwnd, L"Nenhum processo selecionado na lista.", L"Aviso", MB_OK | MB_ICONWARNING);
-        } else {
-            std::wstring msg = L"Aplicado prioridade em " + std::to_wstring(selecionados) + L" processo(s).";
-            MessageBoxW(hwnd, msg.c_str(), L"Concluído", MB_OK | MB_ICONINFORMATION);
-        }
+        std::wstring msg = L"Alterações aplicadas: " + std::to_wstring(alterados);
+        MessageBoxW(hwnd, msg.c_str(), L"Concluído", MB_OK | MB_ICONINFORMATION);
         break;
     }
     case ID_BTN_BUSCAR: {

@@ -7,7 +7,7 @@
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hListResult;
+    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnAplicar, hListResult;
     switch (msg) {
     case WM_CREATE: {
         hBtnAlta = CreateWindowW(L"BUTTON", L"Prioridade Alta",
@@ -22,12 +22,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             180, 60, 180, 30,
             hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
+        hBtnAplicar = CreateWindowW(L"BUTTON", L"Aplicar Alta (selecionados)",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            370, 60, 230, 30,
+            hwnd, (HMENU)ID_BTN_APLICAR_SELECIONADOS, nullptr, nullptr);
 
         // ListView
         INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
         InitCommonControlsEx(&icex);
         hListResult = CreateWindowW(WC_LISTVIEW, L"",
-            WS_CHILD | WS_VISIBLE | LVS_REPORT | LVS_SINGLESEL | WS_BORDER,
+            WS_CHILD | WS_VISIBLE | LVS_REPORT | WS_BORDER,
             20, 110, 580, 200,
             hwnd, nullptr, nullptr, nullptr);
 

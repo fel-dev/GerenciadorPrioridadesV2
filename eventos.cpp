@@ -3,6 +3,7 @@
 #include "processos.h"
 #include <windows.h>
 #include <commctrl.h>
+#include <tlhelp32.h>
 #include <string>
 #include <vector>
 
@@ -24,7 +25,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 2048);
     std::wstring texto(buffer);
 
-    if (texto.empty()) {
+    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR) {
         MessageBoxW(hwnd, L"Digite ao menos um nome de processo.", L"Aviso", MB_OK | MB_ICONWARNING);
         return;
     }
@@ -41,15 +42,33 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     switch (LOWORD(wParam)) {
     case ID_BTN_ALTA:  prioridade = HIGH_PRIORITY_CLASS; break;
     case ID_BTN_BAIXA: prioridade = IDLE_PRIORITY_CLASS; break;
-    default: return;
     }
 
     HWND hLista = GetListaResultados(hwnd);
     if (hLista) ListView_DeleteAllItems(hLista);
 
-    for (const auto& nome : linhas) {
-        bool ok = AlterarPrioridade(nome, prioridade);
-        std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
-        if (hLista) AdicionarNaLista(hLista, nome, status);
+    switch (LOWORD(wParam)) {
+    case ID_BTN_ALTA:
+    case ID_BTN_BAIXA:
+        for (const auto& nome : linhas) {
+            bool ok = AlterarPrioridade(nome, prioridade);
+            std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
+            if (hLista) AdicionarNaLista(hLista, nome, status);
+        }
+        break;
+    case ID_BTN_ATUALIZAR: {
+        HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (hSnap == INVALID_HANDLE_VALUE) break;
+        PROCESSENTRY32W pe = { 0 };
+        pe.dwSize = sizeof(pe);
+        if (Process32FirstW(hSnap, &pe)) {
+            do {
+                std::wstring nome(pe.szExeFile);
+                if (hLista) AdicionarNaLista(hLista, nome, L"Rodando");
+            } while (Process32NextW(hSnap, &pe));
+        }
+        CloseHandle(hSnap);
+        break;
+    }
     }
 }

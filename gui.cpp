@@ -7,7 +7,7 @@
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND hBtnAlta, hBtnBaixa, hListResult;
+    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hListResult;
     switch (msg) {
     case WM_CREATE: {
         hBtnAlta = CreateWindowW(L"BUTTON", L"Prioridade Alta",
@@ -18,6 +18,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             20, 60, 140, 30,
             hwnd, (HMENU)2002, nullptr, nullptr);
+        hBtnAtualizar = CreateWindowW(L"BUTTON", L"Atualizar Processos",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            180, 60, 180, 30,
+            hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
 
         // ListView
         INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };

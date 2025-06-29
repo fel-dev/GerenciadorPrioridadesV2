@@ -25,7 +25,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 2048);
     std::wstring texto(buffer);
 
-    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS) {
+    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR) {
         MessageBoxW(hwnd, L"Digite ao menos um nome de processo.", L"Aviso", MB_OK | MB_ICONWARNING);
         return;
     }
@@ -45,7 +45,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     }
 
     HWND hLista = GetListaResultados(hwnd);
-    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS) ListView_DeleteAllItems(hLista);
+    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR) ListView_DeleteAllItems(hLista);
 
     switch (LOWORD(wParam)) {
     case ID_BTN_ALTA:
@@ -89,6 +89,38 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         } else {
             std::wstring msg = L"Aplicado prioridade em " + std::to_wstring(selecionados) + L" processo(s).";
             MessageBoxW(hwnd, msg.c_str(), L"Concluído", MB_OK | MB_ICONINFORMATION);
+        }
+        break;
+    }
+    case ID_BTN_BUSCAR: {
+        HWND hLista = GetListaResultados(hwnd);
+        if (!hLista) break;
+        wchar_t buffer[260] = {};
+        GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 260);
+        std::wstring alvo(buffer);
+        if (alvo.empty()) {
+            MessageBoxW(hwnd, L"Digite o nome do processo para buscar.", L"Aviso", MB_OK | MB_ICONWARNING);
+            break;
+        }
+        // Adiciona .exe se necessário
+        if (alvo.size() > 0 && alvo.find(L".exe") == std::wstring::npos) {
+            alvo += L".exe";
+        }
+        int total = ListView_GetItemCount(hLista);
+        bool encontrado = false;
+        for (int i = 0; i < total; ++i) {
+            wchar_t nome[260];
+            ListView_GetItemText(hLista, i, 0, nome, 260);
+            if (_wcsicmp(nome, alvo.c_str()) == 0) {
+                ListView_SetItemState(hLista, i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+                ListView_EnsureVisible(hLista, i, FALSE);
+                encontrado = true;
+                break;
+            }
+        }
+        if (!encontrado) {
+            MessageBoxW(hwnd, (L"Processo \"" + alvo + L"\" não encontrado.").c_str(),
+                        L"Não localizado", MB_OK | MB_ICONINFORMATION);
         }
         break;
     }

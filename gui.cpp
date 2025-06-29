@@ -7,7 +7,7 @@
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
-    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnAplicar, hListResult;
+    static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnAplicar, hBtnBuscar, hListResult, hEditEntrada;
     switch (msg) {
     case WM_CREATE: {
         hBtnAlta = CreateWindowW(L"BUTTON", L"Prioridade Alta",
@@ -26,6 +26,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             370, 60, 230, 30,
             hwnd, (HMENU)ID_BTN_APLICAR_SELECIONADOS, nullptr, nullptr);
+
+        // Campo de texto de entrada (Edit)
+        hEditEntrada = CreateWindowW(L"EDIT", L"",
+            WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE,
+            180, 20, 350, 30,
+            hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
+
+        // Botão Buscar
+        hBtnBuscar = CreateWindowW(L"BUTTON", L"🔍 Buscar",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            540, 20, 80, 30,
+            hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
 
         // ListView
         INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
@@ -60,9 +72,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         ListView_SetItemText(hListResult, 0, 1, (LPWSTR)L"Prioridade alterada ✅");
         break;
     }
-    case WM_COMMAND:
-        TratarEventoBotao(hwnd, wParam);
+    case WM_COMMAND: {
+        int wmId = LOWORD(wParam);
+        if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_APLICAR_SELECIONADOS || wmId == ID_BTN_BUSCAR) {
+            TratarEventoBotao(hwnd, wParam);
+        }
         break;
+    }
     case WM_DESTROY:
         PostQuitMessage(0);
         break;

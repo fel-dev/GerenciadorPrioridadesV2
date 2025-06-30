@@ -5,10 +5,14 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <tlhelp32.h>
+#include <psapi.h>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <ctime>
+#include <tuple>
+#include <algorithm>
+#pragma comment(lib, "psapi.lib")
 
 HWND GetListaResultados(HWND hwndPai) {
     return FindWindowEx(hwndPai, nullptr, WC_LISTVIEW, nullptr);
@@ -90,13 +94,55 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         if (hSnap == INVALID_HANDLE_VALUE) break;
         PROCESSENTRY32W pe = { 0 };
         pe.dwSize = sizeof(pe);
+        struct ProcInfo {
+            std::wstring nome;
+            std::wstring prioridade;
+            std::wstring status;
+            SIZE_T memoria;
+        };
+        std::vector<ProcInfo> processos;
         if (Process32FirstW(hSnap, &pe)) {
             do {
-                std::wstring nome(pe.szExeFile);
-                if (hLista) AdicionarNaLista(hLista, nome, L"Rodando");
+                PROCESS_MEMORY_COUNTERS pmc = { 0 };
+                SIZE_T kb = 0;
+                std::wstring strPrioridade = L"(?)";
+                HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ProcessID);
+                if (hProc) {
+                    DWORD priClass = GetPriorityClass(hProc);
+                    switch (priClass) {
+                        case IDLE_PRIORITY_CLASS: strPrioridade = L"Baixa"; break;
+                        case NORMAL_PRIORITY_CLASS: strPrioridade = L"Normal"; break;
+                        case HIGH_PRIORITY_CLASS: strPrioridade = L"Alta"; break;
+                        case REALTIME_PRIORITY_CLASS: strPrioridade = L"Tempo real"; break;
+                        case ABOVE_NORMAL_PRIORITY_CLASS: strPrioridade = L"Acima do normal"; break;
+                        case BELOW_NORMAL_PRIORITY_CLASS: strPrioridade = L"Abaixo do normal"; break;
+                        default: break;
+                    }
+                    if (GetProcessMemoryInfo(hProc, &pmc, sizeof(pmc))) {
+                        kb = pmc.WorkingSetSize / 1024;
+                    }
+                    CloseHandle(hProc);
+                }
+                processos.push_back({pe.szExeFile, strPrioridade, L"Rodando", kb});
             } while (Process32NextW(hSnap, &pe));
         }
         CloseHandle(hSnap);
+        // Ordena do maior para o menor uso de memória
+        std::sort(processos.begin(), processos.end(), [](const ProcInfo& a, const ProcInfo& b) {
+            return a.memoria > b.memoria;
+        });
+        if (hLista) ListView_DeleteAllItems(hLista);
+        for (size_t i = 0; i < processos.size(); ++i) {
+            LVITEMW item = { 0 };
+            item.mask = LVIF_TEXT;
+            item.iItem = (int)i;
+            item.pszText = (LPWSTR)processos[i].nome.c_str();
+            ListView_InsertItem(hLista, &item);
+            ListView_SetItemText(hLista, (int)i, 1, (LPWSTR)processos[i].prioridade.c_str());
+            ListView_SetItemText(hLista, (int)i, 2, (LPWSTR)processos[i].status.c_str());
+            std::wstring memStr = std::to_wstring(processos[i].memoria) + L" KB";
+            ListView_SetItemText(hLista, (int)i, 3, (LPWSTR)memStr.c_str());
+        }
         break;
     }
     case ID_BTN_APLICAR_SELECIONADOS: {

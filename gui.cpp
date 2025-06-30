@@ -16,6 +16,7 @@ struct SortParams {
 };
 
 std::map<int, bool> ordemCrescentePorColuna;
+int ultimaColunaOrdenada = -1;
 
 int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
     SortParams* params = (SortParams*)lParamSort;
@@ -140,11 +141,25 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_NOTIFY: {
         if (((LPNMHDR)lParam)->code == LVN_COLUMNCLICK) {
             NMLISTVIEW* pnm = (NMLISTVIEW*)lParam;
+            HWND hList = hListResult;
             int col = pnm->iSubItem;
-            bool ordemAtual = ordemCrescentePorColuna[col];
-            ordemCrescentePorColuna[col] = !ordemAtual;
-            SortParams* params = new SortParams{ hListResult, col, !ordemAtual };
-            ListView_SortItemsEx(hListResult, CompararItens, (LPARAM)params);
+            bool crescente = !ordemCrescentePorColuna[col];
+            ordemCrescentePorColuna[col] = crescente;
+            // Atualiza setas no header
+            HWND hHeader = ListView_GetHeader(hList);
+            for (int i = 0; i < Header_GetItemCount(hHeader); ++i) {
+                HDITEM item = { 0 };
+                item.mask = HDI_FORMAT;
+                Header_GetItem(hHeader, i, &item);
+                item.fmt &= ~(HDF_SORTUP | HDF_SORTDOWN); // limpa setas
+                if (i == col) {
+                    item.fmt |= crescente ? HDF_SORTUP : HDF_SORTDOWN;
+                }
+                Header_SetItem(hHeader, i, &item);
+            }
+            ultimaColunaOrdenada = col;
+            SortParams* params = new SortParams{ hList, col, crescente };
+            ListView_SortItemsEx(hList, CompararItens, (LPARAM)params);
             delete params;
         }
         break;

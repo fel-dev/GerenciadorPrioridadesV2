@@ -8,32 +8,25 @@
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
-    static HWND hComboPrioridade, hBtnAplicarPrioridade;
+    static HWND hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog;
     switch (msg) {
     case WM_CREATE: {
-        hBtnAlta = CreateWindowW(L"BUTTON", L"Prioridade Alta",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            20, 20, 140, 30,
-            hwnd, (HMENU)2001, nullptr, nullptr);
-        hBtnBaixa = CreateWindowW(L"BUTTON", L"Prioridade Baixa",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            20, 60, 140, 30,
-            hwnd, (HMENU)2002, nullptr, nullptr);
-        hBtnAtualizar = CreateWindowW(L"BUTTON", L"Atualizar Processos",
-            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            180, 60, 180, 30,
-            hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
-
-        // Campo de texto de entrada (Edit)
+        // Campo de texto (EDIT)
         hEditEntrada = CreateWindowW(L"EDIT", L"",
             WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE,
-            180, 20, 350, 30,
+            20, 20, 450, 60,
             hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
+
+        // Botão Buscar
+        hBtnBuscar = CreateWindowW(L"BUTTON", L"🔍 Buscar",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            480, 20, 110, 30,
+            hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
 
         // ComboBox de prioridade
         hComboPrioridade = CreateWindowW(L"COMBOBOX", nullptr,
             WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
-            370, 20, 200, 300,
+            20, 95, 200, 300,
             hwnd, (HMENU)ID_COMBO_PRIORIDADE, nullptr, nullptr);
         SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Baixa (IDLE)");
         SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Normal");
@@ -45,21 +38,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         // Botão Aplicar Prioridade
         hBtnAplicarPrioridade = CreateWindowW(L"BUTTON", L"Aplicar Prioridade",
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            580, 20, 120, 30,
+            230, 95, 150, 30,
             hwnd, (HMENU)ID_BTN_APLICAR_PRIORIDADE, nullptr, nullptr);
 
-        // Botão Buscar
-        hBtnBuscar = CreateWindowW(L"BUTTON", L"🔍 Buscar",
+        // Botão Atualizar Processos
+        hBtnAtualizar = CreateWindowW(L"BUTTON", L"Atualizar Processos",
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-            540, 60, 80, 30,
-            hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
+            390, 95, 150, 30,
+            hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
 
-        // ListView
+        // Botão Salvar Log
+        hBtnSalvarLog = CreateWindowW(L"BUTTON", L"💾 Salvar Log",
+            WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+            550, 95, 150, 30,
+            hwnd, (HMENU)ID_BTN_SALVAR_LOG, nullptr, nullptr);
+
+        // ListView (abaixo dos botões)
         INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
         InitCommonControlsEx(&icex);
         hListResult = CreateWindowW(WC_LISTVIEW, L"",
             WS_CHILD | WS_VISIBLE | LVS_REPORT | WS_BORDER,
-            20, 110, 580, 200,
+            20, 140, 680, 280,
             hwnd, nullptr, nullptr, nullptr);
 
         // Estilo grid e full row select
@@ -89,7 +88,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     }
     case WM_COMMAND: {
         int wmId = LOWORD(wParam);
-        if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_BUSCAR || wmId == ID_BTN_APLICAR_PRIORIDADE) {
+        if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_BUSCAR || wmId == ID_BTN_APLICAR_PRIORIDADE || wmId == ID_BTN_SALVAR_LOG) {
             TratarEventoBotao(hwnd, wParam);
         }
         break;
@@ -115,7 +114,7 @@ void CriarJanela(HINSTANCE hInstance, int nCmdShow) {
     HWND hwnd = CreateWindowEx(
         0, classeJanela, L"Gerenciador de Prioridades — V2",
         WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 640, 400,
+        CW_USEDEFAULT, CW_USEDEFAULT, 740, 500,
         nullptr, nullptr, hInstance, nullptr
     );
 

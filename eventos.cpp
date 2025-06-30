@@ -1,4 +1,5 @@
-﻿#include "eventos.h"
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include "eventos.h"
 #include "gui.h"
 #include "processos.h"
 #include <windows.h>
@@ -6,6 +7,8 @@
 #include <tlhelp32.h>
 #include <string>
 #include <vector>
+#include <fstream>
+#include <ctime>
 
 HWND GetListaResultados(HWND hwndPai) {
     return FindWindowEx(hwndPai, nullptr, WC_LISTVIEW, nullptr);
@@ -20,12 +23,38 @@ void AdicionarNaLista(HWND hList, const std::wstring& processo, const std::wstri
     ListView_SetItemText(hList, item.iItem, 1, (LPWSTR)status.c_str());
 }
 
+void SalvarLogParaArquivo(HWND hList) {
+    std::wofstream arquivo(L"log_prioridades.txt", std::ios::app);
+    if (!arquivo.is_open()) {
+        MessageBoxW(nullptr, L"Falha ao abrir o arquivo de log.", L"Erro", MB_OK | MB_ICONERROR);
+        return;
+    }
+    std::time_t t = std::time(nullptr);
+    struct tm tm_buf;
+    errno_t err = localtime_s(&tm_buf, &t);
+    wchar_t dataHora[100] = L"";
+    if (err == 0) {
+        wcsftime(dataHora, 100, L"%d/%m/%Y %H:%M:%S", &tm_buf);
+    }
+    arquivo << L"\n==== LOG EM " << dataHora << L" ====\n";
+    int total = ListView_GetItemCount(hList);
+    for (int i = 0; i < total; ++i) {
+        wchar_t nome[260], status[260];
+        ListView_GetItemText(hList, i, 0, nome, 260);
+        ListView_GetItemText(hList, i, 1, status, 260);
+        arquivo << nome << L"  " << status << L"\n";
+    }
+    arquivo << L"=============================\n";
+    arquivo.close();
+    MessageBoxW(nullptr, L"Log salvo com sucesso em 'log_prioridades.txt'.", L"OK", MB_OK | MB_ICONINFORMATION);
+}
+
 void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     wchar_t buffer[2048] = {};
     GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 2048);
     std::wstring texto(buffer);
 
-    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE) {
+    if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE && LOWORD(wParam) != ID_BTN_SALVAR_LOG) {
         MessageBoxW(hwnd, L"Digite ao menos um nome de processo.", L"Aviso", MB_OK | MB_ICONWARNING);
         return;
     }
@@ -45,7 +74,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     }
 
     HWND hLista = GetListaResultados(hwnd);
-    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE) ListView_DeleteAllItems(hLista);
+    if (hLista && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE && LOWORD(wParam) != ID_BTN_SALVAR_LOG) ListView_DeleteAllItems(hLista);
 
     switch (LOWORD(wParam)) {
     case ID_BTN_ALTA:
@@ -133,6 +162,11 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             MessageBoxW(hwnd, (L"Processo \"" + alvo + L"\" não encontrado.").c_str(),
                         L"Não localizado", MB_OK | MB_ICONINFORMATION);
         }
+        break;
+    }
+    case ID_BTN_SALVAR_LOG: {
+        HWND hLista = GetListaResultados(hwnd);
+        if (hLista) SalvarLogParaArquivo(hLista);
         break;
     }
     }

@@ -1,0 +1,5 @@
+
+==== LOG EM 30/06/2025 10:20:54 ====
+msedge.exe  Prioridade alterada 
+==== LOG EM 30/06/2025 10:22:10 ====
+[System Process]  Falha ao alterar 

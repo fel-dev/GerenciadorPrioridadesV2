@@ -2,8 +2,36 @@
 #include "eventos.h"
 #include <windows.h>
 #include <commctrl.h>
+#include <string>
+#include <map>
 
 #pragma comment(lib, "comctl32.lib")
+
+#define IDC_LISTVIEW_RESULT 4001
+
+struct SortParams {
+    HWND hList;
+    int column;
+    bool ascending;
+};
+
+std::map<int, bool> ordemCrescentePorColuna;
+
+int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
+    SortParams* params = (SortParams*)lParamSort;
+    WCHAR texto1[256] = {}, texto2[256] = {};
+    ListView_GetItemText(params->hList, lParam1, params->column, texto1, 256);
+    ListView_GetItemText(params->hList, lParam2, params->column, texto2, 256);
+    int resultado = 0;
+    if (params->column == 3) { // Memória (coluna 3): ordenar como número
+        int mem1 = _wtoi(texto1);
+        int mem2 = _wtoi(texto2);
+        resultado = mem1 - mem2;
+    } else {
+        resultado = _wcsicmp(texto1, texto2);
+    }
+    return params->ascending ? resultado : -resultado;
+}
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
@@ -65,7 +93,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         hListResult = CreateWindowW(WC_LISTVIEW, L"",
             WS_CHILD | WS_VISIBLE | LVS_REPORT | WS_BORDER,
             20, 140, 680, 280,
-            hwnd, nullptr, nullptr, nullptr);
+            hwnd, (HMENU)IDC_LISTVIEW_RESULT, nullptr, nullptr);
 
         // Estilo grid e full row select
         ListView_SetExtendedListViewStyle(hListResult,
@@ -106,6 +134,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         int wmId = LOWORD(wParam);
         if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_BUSCAR || wmId == ID_BTN_APLICAR_PRIORIDADE || wmId == ID_BTN_SALVAR_LOG) {
             TratarEventoBotao(hwnd, wParam);
+        }
+        break;
+    }
+    case WM_NOTIFY: {
+        if (((LPNMHDR)lParam)->code == LVN_COLUMNCLICK) {
+            NMLISTVIEW* pnm = (NMLISTVIEW*)lParam;
+            int col = pnm->iSubItem;
+            bool ordemAtual = ordemCrescentePorColuna[col];
+            ordemCrescentePorColuna[col] = !ordemAtual;
+            SortParams* params = new SortParams{ hListResult, col, !ordemAtual };
+            ListView_SortItemsEx(hListResult, CompararItens, (LPARAM)params);
+            delete params;
         }
         break;
     }

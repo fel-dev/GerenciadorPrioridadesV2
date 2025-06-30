@@ -12,7 +12,11 @@
 #include <ctime>
 #include <tuple>
 #include <algorithm>
+#include <map>
 #pragma comment(lib, "psapi.lib")
+
+int ultimaColunaOrdenada = -1;
+std::map<int, bool> ordemCrescentePorColuna;
 
 HWND GetListaResultados(HWND hwndPai) {
     return FindWindowEx(hwndPai, nullptr, WC_LISTVIEW, nullptr);
@@ -41,6 +45,20 @@ void SalvarLogParaArquivo(HWND hList) {
         wcsftime(dataHora, 100, L"%d/%m/%Y %H:%M:%S", &tm_buf);
     }
     arquivo << L"\n==== LOG EM " << dataHora << L" ====\n";
+    // Nome da coluna ordenada
+    std::wstring nomeColuna = L"(sem ordenação)";
+    switch (ultimaColunaOrdenada) {
+        case 0: nomeColuna = L"Processo"; break;
+        case 1: nomeColuna = L"Prioridade"; break;
+        case 2: nomeColuna = L"Status"; break;
+        case 3: nomeColuna = L"Memória (KB)"; break;
+    }
+    std::wstring direcao = L"";
+    if (ultimaColunaOrdenada != -1) {
+        bool crescente = ordemCrescentePorColuna[ultimaColunaOrdenada];
+        direcao = crescente ? L" (crescente)" : L" (decrescente)";
+    }
+    arquivo << L"Ordenado por: " << nomeColuna << direcao << L"\n";
     int total = ListView_GetItemCount(hList);
     for (int i = 0; i < total; ++i) {
         wchar_t nome[260], status[260];

@@ -7,6 +7,9 @@
 
 #pragma comment(lib, "comctl32.lib")
 
+extern int ultimaColunaOrdenada;
+extern std::map<int, bool> ordemCrescentePorColuna;
+
 #define IDC_LISTVIEW_RESULT 4001
 
 struct SortParams {
@@ -14,9 +17,6 @@ struct SortParams {
     int column;
     bool ascending;
 };
-
-std::map<int, bool> ordemCrescentePorColuna;
-int ultimaColunaOrdenada = -1;
 
 int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
     SortParams* params = (SortParams*)lParamSort;

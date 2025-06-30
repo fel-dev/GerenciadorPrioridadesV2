@@ -22,13 +22,14 @@ HWND GetListaResultados(HWND hwndPai) {
     return FindWindowEx(hwndPai, nullptr, WC_LISTVIEW, nullptr);
 }
 
-void AdicionarNaLista(HWND hList, const std::wstring& processo, const std::wstring& status) {
+void AdicionarNaLista(HWND hList, const std::wstring& favorito, const std::wstring& processo, const std::wstring& status) {
     LVITEMW item = { 0 };
     item.mask = LVIF_TEXT;
     item.iItem = ListView_GetItemCount(hList);
-    item.pszText = (LPWSTR)processo.c_str();
+    item.pszText = (LPWSTR)favorito.c_str();
     ListView_InsertItem(hList, &item);
-    ListView_SetItemText(hList, item.iItem, 1, (LPWSTR)status.c_str());
+    ListView_SetItemText(hList, item.iItem, 1, (LPWSTR)processo.c_str());
+    ListView_SetItemText(hList, item.iItem, 2, (LPWSTR)status.c_str());
 }
 
 void SalvarLogParaArquivo(HWND hList) {
@@ -48,10 +49,11 @@ void SalvarLogParaArquivo(HWND hList) {
     // Nome da coluna ordenada
     std::wstring nomeColuna = L"(sem ordenação)";
     switch (ultimaColunaOrdenada) {
-        case 0: nomeColuna = L"Processo"; break;
-        case 1: nomeColuna = L"Prioridade"; break;
-        case 2: nomeColuna = L"Status"; break;
-        case 3: nomeColuna = L"Memória (KB)"; break;
+        case 0: nomeColuna = L"Favorito"; break;
+        case 1: nomeColuna = L"Processo"; break;
+        case 2: nomeColuna = L"Prioridade"; break;
+        case 3: nomeColuna = L"Status"; break;
+        case 4: nomeColuna = L"Memória (KB)"; break;
     }
     std::wstring direcao = L"";
     if (ultimaColunaOrdenada != -1) {
@@ -61,10 +63,11 @@ void SalvarLogParaArquivo(HWND hList) {
     arquivo << L"Ordenado por: " << nomeColuna << direcao << L"\n";
     int total = ListView_GetItemCount(hList);
     for (int i = 0; i < total; ++i) {
-        wchar_t nome[260], status[260];
-        ListView_GetItemText(hList, i, 0, nome, 260);
-        ListView_GetItemText(hList, i, 1, status, 260);
-        arquivo << nome << L"  " << status << L"\n";
+        wchar_t favorito[260], nome[260], status[260];
+        ListView_GetItemText(hList, i, 0, favorito, 260);
+        ListView_GetItemText(hList, i, 1, nome, 260);
+        ListView_GetItemText(hList, i, 2, status, 260);
+        arquivo << favorito << L"  " << nome << L"  " << status << L"\n";
     }
     arquivo << L"=============================\n";
     arquivo.close();
@@ -104,7 +107,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         for (const auto& nome : linhas) {
             bool ok = AlterarPrioridade(nome, prioridade);
             std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
-            if (hLista) AdicionarNaLista(hLista, nome, status);
+            if (hLista) AdicionarNaLista(hLista, L"", nome, status);
         }
         break;
     case ID_BTN_ATUALIZAR: {
@@ -113,6 +116,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         PROCESSENTRY32W pe = { 0 };
         pe.dwSize = sizeof(pe);
         struct ProcInfo {
+            std::wstring favorito;
             std::wstring nome;
             std::wstring prioridade;
             std::wstring status;
@@ -141,7 +145,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
                     }
                     CloseHandle(hProc);
                 }
-                processos.push_back({pe.szExeFile, strPrioridade, L"Rodando", kb});
+                processos.push_back({L"", pe.szExeFile, strPrioridade, L"Rodando", kb});
             } while (Process32NextW(hSnap, &pe));
         }
         CloseHandle(hSnap);
@@ -154,12 +158,13 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             LVITEMW item = { 0 };
             item.mask = LVIF_TEXT;
             item.iItem = (int)i;
-            item.pszText = (LPWSTR)processos[i].nome.c_str();
+            item.pszText = (LPWSTR)processos[i].favorito.c_str();
             ListView_InsertItem(hLista, &item);
-            ListView_SetItemText(hLista, (int)i, 1, (LPWSTR)processos[i].prioridade.c_str());
-            ListView_SetItemText(hLista, (int)i, 2, (LPWSTR)processos[i].status.c_str());
+            ListView_SetItemText(hLista, (int)i, 1, (LPWSTR)processos[i].nome.c_str());
+            ListView_SetItemText(hLista, (int)i, 2, (LPWSTR)processos[i].prioridade.c_str());
+            ListView_SetItemText(hLista, (int)i, 3, (LPWSTR)processos[i].status.c_str());
             std::wstring memStr = std::to_wstring(processos[i].memoria) + L" KB";
-            ListView_SetItemText(hLista, (int)i, 3, (LPWSTR)memStr.c_str());
+            ListView_SetItemText(hLista, (int)i, 4, (LPWSTR)memStr.c_str());
         }
         break;
     }
@@ -185,10 +190,10 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         for (int i = 0; i < count; ++i) {
             if (ListView_GetItemState(hLista, i, LVIS_SELECTED) & LVIS_SELECTED) {
                 wchar_t buffer[260];
-                ListView_GetItemText(hLista, i, 0, buffer, 260);
+                ListView_GetItemText(hLista, i, 1, buffer, 260);
                 bool ok = AlterarPrioridade(buffer, prioridade);
                 std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
-                ListView_SetItemText(hLista, i, 1, (LPWSTR)status.c_str());
+                ListView_SetItemText(hLista, i, 2, (LPWSTR)status.c_str());
                 ++alterados;
             }
         }
@@ -214,7 +219,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         bool encontrado = false;
         for (int i = 0; i < total; ++i) {
             wchar_t nome[260];
-            ListView_GetItemText(hLista, i, 0, nome, 260);
+            ListView_GetItemText(hLista, i, 1, nome, 260);
             if (_wcsicmp(nome, alvo.c_str()) == 0) {
                 ListView_SetItemState(hLista, i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
                 ListView_EnsureVisible(hLista, i, FALSE);

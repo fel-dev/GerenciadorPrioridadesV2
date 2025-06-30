@@ -24,7 +24,7 @@ int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
     ListView_GetItemText(params->hList, lParam1, params->column, texto1, 256);
     ListView_GetItemText(params->hList, lParam2, params->column, texto2, 256);
     int resultado = 0;
-    if (params->column == 3) { // Memória (coluna 3): ordenar como número
+    if (params->column == 4) { // Memória (coluna 4): ordenar como número
         int mem1 = _wtoi(texto1);
         int mem2 = _wtoi(texto2);
         resultado = mem1 - mem2;
@@ -104,31 +104,36 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         LVCOLUMNW col = { 0 };
         col.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 
+        col.pszText = (LPWSTR)L"⭐";
+        col.cx = 40;
+        ListView_InsertColumn(hListResult, 0, &col);
+
         col.pszText = (LPWSTR)L"Processo";
         col.cx = 220;
-        ListView_InsertColumn(hListResult, 0, &col);
+        ListView_InsertColumn(hListResult, 1, &col);
 
         col.pszText = (LPWSTR)L"Prioridade";
         col.cx = 120;
-        ListView_InsertColumn(hListResult, 1, &col);
+        ListView_InsertColumn(hListResult, 2, &col);
 
         col.pszText = (LPWSTR)L"Status";
         col.cx = 180;
-        ListView_InsertColumn(hListResult, 2, &col);
+        ListView_InsertColumn(hListResult, 3, &col);
 
         col.pszText = (LPWSTR)L"Memória (KB)";
         col.cx = 130;
-        ListView_InsertColumn(hListResult, 3, &col);
+        ListView_InsertColumn(hListResult, 4, &col);
 
         // Item de exemplo
         LVITEMW item = { 0 };
         item.mask = LVIF_TEXT;
         item.iItem = 0;
-        item.pszText = (LPWSTR)L"chrome.exe";
+        item.pszText = (LPWSTR)L"";
         ListView_InsertItem(hListResult, &item);
-        ListView_SetItemText(hListResult, 0, 1, (LPWSTR)L"Normal");
-        ListView_SetItemText(hListResult, 0, 2, (LPWSTR)L"Prioridade alterada ✅");
-        ListView_SetItemText(hListResult, 0, 3, (LPWSTR)L"123456 KB");
+        ListView_SetItemText(hListResult, 0, 1, (LPWSTR)L"chrome.exe");
+        ListView_SetItemText(hListResult, 0, 2, (LPWSTR)L"Normal");
+        ListView_SetItemText(hListResult, 0, 3, (LPWSTR)L"Prioridade alterada ✅");
+        ListView_SetItemText(hListResult, 0, 4, (LPWSTR)L"123456 KB");
         break;
     }
     case WM_COMMAND: {
@@ -139,7 +144,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     }
     case WM_NOTIFY: {
-        if (((LPNMHDR)lParam)->code == LVN_COLUMNCLICK) {
+        LPNMHDR pnmhdr = (LPNMHDR)lParam;
+        if (pnmhdr->code == LVN_COLUMNCLICK) {
             NMLISTVIEW* pnm = (NMLISTVIEW*)lParam;
             HWND hList = hListResult;
             int col = pnm->iSubItem;
@@ -161,6 +167,30 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             SortParams* params = new SortParams{ hList, col, crescente };
             ListView_SortItemsEx(hList, CompararItens, (LPARAM)params);
             delete params;
+        } else if (pnmhdr->code == NM_CUSTOMDRAW && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
+            LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
+            switch (lplvcd->nmcd.dwDrawStage) {
+            case CDDS_PREPAINT:
+                return CDRF_NOTIFYITEMDRAW;
+            case CDDS_ITEMPREPAINT: {
+                // Pega valor da coluna Memória
+                WCHAR buffer[256] = {};
+                ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 4, buffer, 256);
+                int memKB = _wtoi(buffer);
+                if (memKB > 512000) {
+                    lplvcd->clrTextBk = RGB(255, 255, 200); // amarelo claro
+                }
+                return CDRF_DODEFAULT;
+            }
+            }
+        } else if (pnmhdr->code == NM_DBLCLK && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
+            LPNMITEMACTIVATE pnm = (LPNMITEMACTIVATE)lParam;
+            if (pnm->iSubItem == 0 && pnm->iItem >= 0) {
+                wchar_t atual[8] = {};
+                ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
+                const wchar_t* novo = (wcscmp(atual, L"⭐") == 0) ? L"" : L"⭐";
+                ListView_SetItemText(hListResult, pnm->iItem, 0, (LPWSTR)novo);
+            }
         }
         break;
     }

@@ -4,6 +4,7 @@
 #include <commctrl.h>
 #include <string>
 #include <map>
+#include <set>
 
 #pragma comment(lib, "comctl32.lib")
 
@@ -137,6 +138,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         ListView_SetItemText(hListResult, 0, 2, (LPWSTR)L"Normal");
         ListView_SetItemText(hListResult, 0, 3, (LPWSTR)L"Prioridade alterada ✅");
         ListView_SetItemText(hListResult, 0, 4, (LPWSTR)L"123456 KB");
+
         break;
     }
     case WM_COMMAND: {
@@ -180,8 +182,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 WCHAR buffer[256] = {};
                 ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 4, buffer, 256);
                 int memKB = _wtoi(buffer);
-                if (memKB > 512000) {
-                    lplvcd->clrTextBk = RGB(255, 255, 200); // amarelo claro
+                // Pega valor da coluna Favorito
+                WCHAR estrela[8] = {};
+                ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 0, estrela, 8);
+                if (wcscmp(estrela, L"⭐") == 0) {
+                    lplvcd->clrTextBk = RGB(230, 255, 230); // verde-claro para favorito
+                } else if (memKB > 512000) {
+                    lplvcd->clrTextBk = RGB(255, 255, 200); // amarelo claro para RAM alta
                 }
                 return CDRF_DODEFAULT;
             }
@@ -189,10 +196,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         } else if (pnmhdr->code == NM_DBLCLK && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMITEMACTIVATE pnm = (LPNMITEMACTIVATE)lParam;
             if (pnm->iSubItem == 0 && pnm->iItem >= 0) {
-                wchar_t atual[8] = {};
+                // Sempre marca/desmarca todos os processos com o mesmo nome
+                wchar_t atual[8] = {}, nomeAlvo[260] = {};
                 ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
-                const wchar_t* novo = (wcscmp(atual, L"⭐") == 0) ? L"" : L"⭐";
-                ListView_SetItemText(hListResult, pnm->iItem, 0, (LPWSTR)novo);
+                ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
+                std::wstring nomeAlvoStr = nomeAlvo;
+                nomeAlvoStr.erase(nomeAlvoStr.find_last_not_of(L" \t\n\r") + 1);
+                bool marcar = (wcscmp(atual, L"⭐") != 0);
+                int total = ListView_GetItemCount(hListResult);
+                for (int i = 0; i < total; ++i) {
+                    wchar_t nome[260];
+                    ListView_GetItemText(hListResult, i, 1, nome, 260);
+                    std::wstring nomeStr = nome;
+                    nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
+                    if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
+                        ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
+                    }
+                }
                 AtualizarArquivoFavoritos(hListResult);
             }
         }

@@ -1,8 +1,6 @@
-devenv.exe
+SixDays-Win64-Shipping.exe
 msedge.exe
-Copilot.exe
-explorer.exe
-msedge.exe
+OneDrive.exe
 msedge.exe
 msedge.exe
 msedge.exe
@@ -21,6 +19,3 @@ msedge.exe
 msedge.exe
 msedge.exe
 msedge.exe
-msedge.exe
-msedge.exe
-Nahimic3.exe

@@ -34,6 +34,9 @@ int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
     return params->ascending ? resultado : -resultado;
 }
 
+// Função para atualizar favoritos (definida em eventos.cpp)
+void AtualizarArquivoFavoritos(HWND hList);
+
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
@@ -190,6 +193,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
                 const wchar_t* novo = (wcscmp(atual, L"⭐") == 0) ? L"" : L"⭐";
                 ListView_SetItemText(hListResult, pnm->iItem, 0, (LPWSTR)novo);
+                AtualizarArquivoFavoritos(hListResult);
             }
         }
         break;

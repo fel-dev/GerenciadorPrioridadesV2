@@ -1,6 +1,7 @@
 ﻿#include "gui.h"
 #include "eventos.h"
 #include "gui_layout.h"
+#include "listview_logic.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <string>
@@ -13,28 +14,6 @@ extern int ultimaColunaOrdenada;
 extern std::map<int, bool> ordemCrescentePorColuna;
 
 #define IDC_LISTVIEW_RESULT 4001
-
-struct SortParams {
-    HWND hList;
-    int column;
-    bool ascending;
-};
-
-int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
-    SortParams* params = (SortParams*)lParamSort;
-    WCHAR texto1[256] = {}, texto2[256] = {};
-    ListView_GetItemText(params->hList, lParam1, params->column, texto1, 256);
-    ListView_GetItemText(params->hList, lParam2, params->column, texto2, 256);
-    int resultado = 0;
-    if (params->column == 4) { // Memória (coluna 4): ordenar como número
-        int mem1 = _wtoi(texto1);
-        int mem2 = _wtoi(texto2);
-        resultado = mem1 - mem2;
-    } else {
-        resultado = _wcsicmp(texto1, texto2);
-    }
-    return params->ascending ? resultado : -resultado;
-}
 
 // Função para atualizar favoritos (definida em eventos.cpp)
 void AtualizarArquivoFavoritos(HWND hList);
@@ -60,26 +39,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         LPNMHDR pnmhdr = (LPNMHDR)lParam;
         if (pnmhdr->code == LVN_COLUMNCLICK) {
             NMLISTVIEW* pnm = (NMLISTVIEW*)lParam;
-            HWND hList = hListResult;
-            int col = pnm->iSubItem;
-            bool crescente = !ordemCrescentePorColuna[col];
-            ordemCrescentePorColuna[col] = crescente;
-            // Atualiza setas no header
-            HWND hHeader = ListView_GetHeader(hList);
-            for (int i = 0; i < Header_GetItemCount(hHeader); ++i) {
-                HDITEM item = { 0 };
-                item.mask = HDI_FORMAT;
-                Header_GetItem(hHeader, i, &item);
-                item.fmt &= ~(HDF_SORTUP | HDF_SORTDOWN); // limpa setas
-                if (i == col) {
-                    item.fmt |= crescente ? HDF_SORTUP : HDF_SORTDOWN;
-                }
-                Header_SetItem(hHeader, i, &item);
-            }
-            ultimaColunaOrdenada = col;
-            SortParams* params = new SortParams{ hList, col, crescente };
-            ListView_SortItemsEx(hList, CompararItens, (LPARAM)params);
-            delete params;
+            TratarColumnClick(hListResult, pnm->iSubItem, ordemCrescentePorColuna, ultimaColunaOrdenada);
         } else if (pnmhdr->code == NM_CUSTOMDRAW && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
             switch (lplvcd->nmcd.dwDrawStage) {

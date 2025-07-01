@@ -93,3 +93,30 @@ void ListView_ShowColumn(HWND hList, int col, bool show) {
     }
     SetWindowLong(hList, GWL_STYLE, style);
 }
+
+// Trata o clique duplo no ListView para marcar/desmarcar favoritos em grupo ou individualmente.
+void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool favoritarTodos, void (*AtualizarArquivoFavoritos)(HWND)) {
+    if (pnm->iSubItem == 0 && pnm->iItem >= 0) {
+        wchar_t atual[8] = {}, nomeAlvo[260] = {};
+        ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
+        ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
+        std::wstring nomeAlvoStr = nomeAlvo;
+        nomeAlvoStr.erase(nomeAlvoStr.find_last_not_of(L" \t\n\r") + 1);
+        bool marcar = (wcscmp(atual, L"?") != 0);
+        int total = ListView_GetItemCount(hListResult);
+        if (favoritarTodos) {
+            for (int i = 0; i < total; ++i) {
+                wchar_t nome[260];
+                ListView_GetItemText(hListResult, i, 1, nome, 260);
+                std::wstring nomeStr = nome;
+                nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
+                if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
+                    ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"?" : (LPWSTR)L"");
+                }
+            }
+        } else {
+            ListView_SetItemText(hListResult, pnm->iItem, 0, marcar ? (LPWSTR)L"?" : (LPWSTR)L"");
+        }
+        AtualizarArquivoFavoritos(hListResult);
+    }
+}

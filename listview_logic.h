@@ -22,3 +22,6 @@ LRESULT TratarCustomDraw(LPNMLVCUSTOMDRAW lplvcd);
 void ListView_SetColumnTitle(HWND hList, int col, const std::wstring& title);
 void ListView_SetColumnWidthEx(HWND hList, int col, int width);
 void ListView_ShowColumn(HWND hList, int col, bool show);
+
+// Função para tratar clique duplo no ListView (NM_DBLCLK)
+void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool favoritarTodos, void (*AtualizarArquivoFavoritos)(HWND));

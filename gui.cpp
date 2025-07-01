@@ -45,31 +45,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             return TratarCustomDraw(lplvcd);
         } else if (pnmhdr->code == NM_DBLCLK && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMITEMACTIVATE pnm = (LPNMITEMACTIVATE)lParam;
-            if (pnm->iSubItem == 0 && pnm->iItem >= 0) {
-                // Se checkbox estiver marcado, marca/desmarca todos os processos com o mesmo nome
-                bool favoritarTodos = (IsDlgButtonChecked(hwnd, ID_CHECK_FAVORITAR_TODOS) == BST_CHECKED);
-                wchar_t atual[8] = {}, nomeAlvo[260] = {};
-                ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
-                ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
-                std::wstring nomeAlvoStr = nomeAlvo;
-                nomeAlvoStr.erase(nomeAlvoStr.find_last_not_of(L" \t\n\r") + 1);
-                bool marcar = (wcscmp(atual, L"⭐") != 0);
-                int total = ListView_GetItemCount(hListResult);
-                if (favoritarTodos) {
-                    for (int i = 0; i < total; ++i) {
-                        wchar_t nome[260];
-                        ListView_GetItemText(hListResult, i, 1, nome, 260);
-                        std::wstring nomeStr = nome;
-                        nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
-                        if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
-                            ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
-                        }
-                    }
-                } else {
-                    ListView_SetItemText(hListResult, pnm->iItem, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
-                }
-                AtualizarArquivoFavoritos(hListResult);
-            }
+            bool favoritarTodos = (IsDlgButtonChecked(hwnd, ID_CHECK_FAVORITAR_TODOS) == BST_CHECKED);
+            TratarDoubleClick(hwnd, hListResult, pnm, favoritarTodos, AtualizarArquivoFavoritos);
         }
         break;
     }

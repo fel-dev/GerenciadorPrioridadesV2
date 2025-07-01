@@ -42,6 +42,7 @@ void AtualizarArquivoFavoritos(HWND hList);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
     static HWND hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog;
+    static HWND hCheckFavoritarTodos;
     switch (msg) {
     case WM_CREATE: {
         // Campo de texto (EDIT)
@@ -55,6 +56,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             480, 20, 110, 30,
             hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
+
+        // Checkbox Favoritar todos com o mesmo nome
+        hCheckFavoritarTodos = CreateWindowW(L"BUTTON", L"Favoritar todos com o mesmo nome",
+            WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
+            480, 60, 220, 30,
+            hwnd, (HMENU)ID_CHECK_FAVORITAR_TODOS, nullptr, nullptr);
+        // Deixa o checkbox marcado por padrão
+        SendMessageW(hCheckFavoritarTodos, BM_SETCHECK, BST_CHECKED, 0);
 
         // ComboBox de prioridade
         hComboPrioridade = CreateWindowW(L"COMBOBOX", nullptr,
@@ -196,7 +205,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         } else if (pnmhdr->code == NM_DBLCLK && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMITEMACTIVATE pnm = (LPNMITEMACTIVATE)lParam;
             if (pnm->iSubItem == 0 && pnm->iItem >= 0) {
-                // Sempre marca/desmarca todos os processos com o mesmo nome
+                // Se checkbox estiver marcado, marca/desmarca todos os processos com o mesmo nome
+                bool favoritarTodos = (IsDlgButtonChecked(hwnd, ID_CHECK_FAVORITAR_TODOS) == BST_CHECKED);
                 wchar_t atual[8] = {}, nomeAlvo[260] = {};
                 ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
                 ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
@@ -204,14 +214,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 nomeAlvoStr.erase(nomeAlvoStr.find_last_not_of(L" \t\n\r") + 1);
                 bool marcar = (wcscmp(atual, L"⭐") != 0);
                 int total = ListView_GetItemCount(hListResult);
-                for (int i = 0; i < total; ++i) {
-                    wchar_t nome[260];
-                    ListView_GetItemText(hListResult, i, 1, nome, 260);
-                    std::wstring nomeStr = nome;
-                    nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
-                    if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
-                        ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
+                if (favoritarTodos) {
+                    for (int i = 0; i < total; ++i) {
+                        wchar_t nome[260];
+                        ListView_GetItemText(hListResult, i, 1, nome, 260);
+                        std::wstring nomeStr = nome;
+                        nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
+                        if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
+                            ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
+                        }
                     }
+                } else {
+                    ListView_SetItemText(hListResult, pnm->iItem, 0, marcar ? (LPWSTR)L"⭐" : (LPWSTR)L"");
                 }
                 AtualizarArquivoFavoritos(hListResult);
             }

@@ -1,4 +1,5 @@
 #include "listview_logic.h"
+#include "utils.h"
 #include <commctrl.h>
 #include <cwchar>
 
@@ -13,7 +14,7 @@ int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
         int mem2 = _wtoi(texto2);
         resultado = mem1 - mem2;
     } else {
-        resultado = _wcsicmp(texto1, texto2);
+        resultado = equals_ignore_case(texto1, texto2) ? 0 : _wcsicmp(texto1, texto2);
     }
     return params->ascending ? resultado : -resultado;
 }
@@ -101,7 +102,7 @@ void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool f
         ListView_GetItemText(hListResult, pnm->iItem, 0, atual, 8);
         ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
         std::wstring nomeAlvoStr = nomeAlvo;
-        nomeAlvoStr.erase(nomeAlvoStr.find_last_not_of(L" \t\n\r") + 1);
+        trim_right(nomeAlvoStr);
         bool marcar = (wcscmp(atual, L"?") != 0);
         int total = ListView_GetItemCount(hListResult);
         if (favoritarTodos) {
@@ -109,8 +110,8 @@ void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool f
                 wchar_t nome[260];
                 ListView_GetItemText(hListResult, i, 1, nome, 260);
                 std::wstring nomeStr = nome;
-                nomeStr.erase(nomeStr.find_last_not_of(L" \t\n\r") + 1);
-                if (_wcsicmp(nomeStr.c_str(), nomeAlvoStr.c_str()) == 0) {
+                trim_right(nomeStr);
+                if (equals_ignore_case(nomeStr, nomeAlvoStr)) {
                     ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"?" : (LPWSTR)L"");
                 }
             }

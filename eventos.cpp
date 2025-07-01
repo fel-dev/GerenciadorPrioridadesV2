@@ -2,6 +2,8 @@
 #include "eventos.h"
 #include "gui.h"
 #include "processos.h"
+#include "favoritos.h"
+#include "utils.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <tlhelp32.h>
@@ -73,22 +75,6 @@ void SalvarLogParaArquivo(HWND hList) {
     arquivo << L"=============================\n";
     arquivo.close();
     MessageBoxW(nullptr, L"Log salvo com sucesso em 'log_prioridades.txt'.", L"OK", MB_OK | MB_ICONINFORMATION);
-}
-
-void AtualizarArquivoFavoritos(HWND hList) {
-    std::wofstream favFile(L"favoritos.txt", std::ios::trunc);
-    if (!favFile.is_open()) return;
-    int total = ListView_GetItemCount(hList);
-    for (int i = 0; i < total; ++i) {
-        wchar_t estrela[8] = {};
-        ListView_GetItemText(hList, i, 0, estrela, 8);
-        if (wcscmp(estrela, L"⭐") == 0) {
-            wchar_t nomeProc[256] = {};
-            ListView_GetItemText(hList, i, 1, nomeProc, 256); // coluna 1 = Processo
-            favFile << nomeProc << L"\n";
-        }
-    }
-    favFile.close();
 }
 
 void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
@@ -166,13 +152,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             } while (Process32NextW(hSnap, &pe));
         }
         CloseHandle(hSnap);
-        std::set<std::wstring> favoritos;
-        std::wifstream favFile(L"favoritos.txt");
-        std::wstring nome;
-        while (std::getline(favFile, nome)) {
-            favoritos.insert(nome);
-        }
-        favFile.close();
+        std::set<std::wstring> favoritos = LerFavoritosArquivo();
         // Ordena do maior para o menor uso de memória
         std::sort(processos.begin(), processos.end(), [](const ProcInfo& a, const ProcInfo& b) {
             return a.memoria > b.memoria;
@@ -187,10 +167,10 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             ListView_SetItemText(hLista, (int)i, 1, (LPWSTR)processos[i].nome.c_str());
             ListView_SetItemText(hLista, (int)i, 2, (LPWSTR)processos[i].prioridade.c_str());
             ListView_SetItemText(hLista, (int)i, 3, (LPWSTR)processos[i].status.c_str());
-            std::wstring memStr = std::to_wstring(processos[i].memoria) + L" KB";
+            std::wstring memStr = to_wstring_with_suffix(processos[i].memoria, L" KB");
             ListView_SetItemText(hLista, (int)i, 4, (LPWSTR)memStr.c_str());
             // Marca favorito se estiver no arquivo
-            if (favoritos.count(processos[i].nome)) {
+            if (ProcessoEhFavorito(favoritos, processos[i].nome)) {
                 ListView_SetItemText(hLista, (int)i, 0, (LPWSTR)L"⭐");
             }
         }
@@ -248,7 +228,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         for (int i = 0; i < total; ++i) {
             wchar_t nome[260];
             ListView_GetItemText(hLista, i, 1, nome, 260);
-            if (_wcsicmp(nome, alvo.c_str()) == 0) {
+            if (equals_ignore_case(nome, alvo)) {
                 ListView_SetItemState(hLista, i, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
                 ListView_EnsureVisible(hLista, i, FALSE);
                 encontrado = true;
@@ -265,7 +245,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         HWND hLista = GetListaResultados(hwnd);
         if (hLista) {
             SalvarLogParaArquivo(hLista);
-            AtualizarArquivoFavoritos(hLista);
+            SalvarFavoritosArquivo(hLista);
         }
         break;
     }

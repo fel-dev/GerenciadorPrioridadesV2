@@ -1,4 +1,4 @@
-#include "gui_layout.h"
+Ôªø#include "gui_layout.h"
 #include "gui.h"
 #include <commctrl.h>
 #include <string>
@@ -10,18 +10,18 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
         20, 20, 450, 60,
         hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
 
-    // Bot„o Buscar
+    // Bot√£o Buscar
     hBtnBuscar = CreateWindowW(L"BUTTON", L"?? Buscar",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         480, 20, 110, 30,
         hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
 
     // Checkbox Favoritar todos com o mesmo nome
-    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", L"Favoritar todos com o mesmo nome",
+    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", L"‚≠ê Favoritar grupo",
         WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
         480, 60, 220, 30,
         hwnd, (HMENU)ID_CHECK_FAVORITAR_TODOS, nullptr, nullptr);
-    // Deixa o checkbox marcado por padr„o
+    // Deixa o checkbox marcado por padr√£o
     SendMessageW(hCheckFavoritarTodos, BM_SETCHECK, BST_CHECKED, 0);
 
     // ComboBox de prioridade
@@ -34,33 +34,33 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Alta");
     SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Acima do normal");
     SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Tempo real");
-    SendMessageW(hComboPrioridade, CB_SETCURSEL, 2, 0); // seleciona "Alta" por padr„o
+    SendMessageW(hComboPrioridade, CB_SETCURSEL, 2, 0); // seleciona "Alta" por padr√£o
 
-    // Bot„o Aplicar Prioridade
-    hBtnAplicarPrioridade = CreateWindowW(L"BUTTON", L" Aplicar Prioridade",
+    // Bot√£o Aplicar Prioridade
+    hBtnAplicarPrioridade = CreateWindowW(L"BUTTON", L"üÜó Aplicar Prioridade",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         230, 95, 150, 30,
         hwnd, (HMENU)ID_BTN_APLICAR_PRIORIDADE, nullptr, nullptr);
 
-    // Bot„o Atualizar Processos
-    hBtnAtualizar = CreateWindowW(L"BUTTON", L"?? Atualizar Processos",
+    // Bot√£o Atualizar Processos
+    hBtnAtualizar = CreateWindowW(L"BUTTON", L"üîÉ Atualizar Processos",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         390, 95, 150, 30,
         hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
 
-    // Bot„o Salvar Log
-    hBtnSalvarLog = CreateWindowW(L"BUTTON", L"?? Salvar Log",
+    // Bot√£o Salvar Log
+    hBtnSalvarLog = CreateWindowW(L"BUTTON", L"üìé Salvar Log",
         WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
         550, 95, 150, 30,
         hwnd, (HMENU)ID_BTN_SALVAR_LOG, nullptr, nullptr);
 
-    // Linha divisÛria visual
+    // Linha divis√≥ria visual
     CreateWindowW(L"STATIC", nullptr,
         WS_CHILD | WS_VISIBLE | SS_ETCHEDHORZ,
         20, 130, 680, 1,
         hwnd, nullptr, nullptr, nullptr);
 
-    // ListView (abaixo dos botıes)
+    // ListView (abaixo dos bot√µes)
     INITCOMMONCONTROLSEX icex = { sizeof(INITCOMMONCONTROLSEX), ICC_LISTVIEW_CLASSES };
     InitCommonControlsEx(&icex);
     hListResult = CreateWindowW(WC_LISTVIEW, L"",
@@ -92,7 +92,7 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     col.cx = 180;
     ListView_InsertColumn(hListResult, 3, &col);
 
-    col.pszText = (LPWSTR)L"MemÛria (KB)";
+    col.pszText = (LPWSTR)L"Mem√≥ria (KB)";
     col.cx = 130;
     ListView_InsertColumn(hListResult, 4, &col);
 
@@ -104,6 +104,6 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     ListView_InsertItem(hListResult, &item);
     ListView_SetItemText(hListResult, 0, 1, (LPWSTR)L"chrome.exe");
     ListView_SetItemText(hListResult, 0, 2, (LPWSTR)L"Normal");
-    ListView_SetItemText(hListResult, 0, 3, (LPWSTR)L"Prioridade alterada ?");
+    ListView_SetItemText(hListResult, 0, 3, (LPWSTR)L"Prioridade alterada üÜó");
     ListView_SetItemText(hListResult, 0, 4, (LPWSTR)L"123456 KB");
 }

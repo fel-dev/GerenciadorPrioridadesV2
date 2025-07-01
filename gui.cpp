@@ -2,6 +2,7 @@
 #include "eventos.h"
 #include "gui_layout.h"
 #include "listview_logic.h"
+#include "favoritos.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <string>
@@ -15,8 +16,10 @@ extern std::map<int, bool> ordemCrescentePorColuna;
 
 #define IDC_LISTVIEW_RESULT 4001
 
-// Função para atualizar favoritos (definida em eventos.cpp)
-void AtualizarArquivoFavoritos(HWND hList);
+// Função para atualizar favoritos (agora definida em favoritos.cpp)
+void AtualizarArquivoFavoritos(HWND hList) {
+    SalvarFavoritosArquivo(hList);
+}
 
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {

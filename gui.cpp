@@ -42,25 +42,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             TratarColumnClick(hListResult, pnm->iSubItem, ordemCrescentePorColuna, ultimaColunaOrdenada);
         } else if (pnmhdr->code == NM_CUSTOMDRAW && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMLVCUSTOMDRAW lplvcd = (LPNMLVCUSTOMDRAW)lParam;
-            switch (lplvcd->nmcd.dwDrawStage) {
-            case CDDS_PREPAINT:
-                return CDRF_NOTIFYITEMDRAW;
-            case CDDS_ITEMPREPAINT: {
-                // Pega valor da coluna Memória
-                WCHAR buffer[256] = {};
-                ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 4, buffer, 256);
-                int memKB = _wtoi(buffer);
-                // Pega valor da coluna Favorito
-                WCHAR estrela[8] = {};
-                ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 0, estrela, 8);
-                if (wcscmp(estrela, L"⭐") == 0) {
-                    lplvcd->clrTextBk = RGB(230, 255, 230); // verde-claro para favorito
-                } else if (memKB > 512000) {
-                    lplvcd->clrTextBk = RGB(255, 255, 200); // amarelo claro para RAM alta
-                }
-                return CDRF_DODEFAULT;
-            }
-            }
+            return TratarCustomDraw(lplvcd);
         } else if (pnmhdr->code == NM_DBLCLK && pnmhdr->idFrom == IDC_LISTVIEW_RESULT) {
             LPNMITEMACTIVATE pnm = (LPNMITEMACTIVATE)lParam;
             if (pnm->iSubItem == 0 && pnm->iItem >= 0) {

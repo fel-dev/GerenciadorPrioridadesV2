@@ -33,6 +33,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
     static HWND hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog;
     static HWND hCheckFavoritarTodos;
+    static HBRUSH hBrushLight = nullptr;
     switch (msg) {
     case WM_CREATE: {
         HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
@@ -45,7 +46,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         // Menu
         HMENU hMenu = LoadMenu(hInstance, MAKEINTRESOURCE(IDR_MAINMENU));
         SetMenu(hwnd, hMenu);
+        // Cria brush para cor light (cinza claro)
+        hBrushLight = CreateSolidBrush(RGB(243,244,246));
         break;
+    }
+    case WM_ERASEBKGND: {
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        FillRect((HDC)wParam, &rc, hBrushLight);
+        return 1;
+    }
+    case WM_CTLCOLORBTN:
+    case WM_CTLCOLORSTATIC: {
+        HDC hdc = (HDC)wParam;
+        SetBkColor(hdc, RGB(243,244,246));
+        SetTextColor(hdc, RGB(30,30,30));
+        return (LRESULT)hBrushLight;
     }
     case WM_COMMAND: {
         switch (LOWORD(wParam)) {
@@ -84,6 +100,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         break;
     }
     case WM_DESTROY:
+        if (hBrushLight) DeleteObject(hBrushLight);
         PostQuitMessage(0);
         break;
     }
@@ -103,7 +120,7 @@ void CriarJanela(HINSTANCE hInstance, int nCmdShow) {
 
     HWND hwnd = CreateWindowEx(
         0, classeJanela, LoadResString(IDS_TITULO_JANELA).c_str(),
-        WS_OVERLAPPEDWINDOW,
+        WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX, // Remove maximizar e redimensionamento
         CW_USEDEFAULT, CW_USEDEFAULT, 740, 500,
         nullptr, nullptr, hInstance, nullptr
     );

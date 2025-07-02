@@ -124,15 +124,27 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="eventos.h" />
+    <ClInclude Include="favoritos.h" />
     <ClInclude Include="gui.h" />
+    <ClInclude Include="gui_layout.h" />
+    <ClInclude Include="listview_logic.h" />
     <ClInclude Include="processos.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="eventos.cpp" />
+    <ClCompile Include="favoritos.cpp" />
     <ClCompile Include="gui.cpp" />
+    <ClCompile Include="gui_layout.cpp" />
+    <ClCompile Include="listview_logic.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processos.cpp" />
     <ClCompile Include="util.cpp" />
+    <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

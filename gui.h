@@ -14,6 +14,7 @@
 #define ID_BTN_APLICAR_PRIORIDADE 2006
 #define IDC_LISTVIEW_RESULT 4001
 #define ID_CHECK_FAVORITAR_TODOS 5002
+#define ID_BTN_SALVAR_LOG 2007
 
 extern int ultimaColunaOrdenada;
 extern std::map<int, bool> ordemCrescentePorColuna;

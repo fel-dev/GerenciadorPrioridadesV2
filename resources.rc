@@ -1,0 +1,46 @@
+#include "resource.h"
+
+IDI_APPICON ICON "appicon.ico"
+
+STRINGTABLE
+BEGIN
+    IDS_BTN_BUSCAR            "?? Buscar"
+    IDS_BTN_APLICAR_PRIOR     "?? Aplicar Prioridade"
+    IDS_BTN_ATUALIZAR         "?? Atualizar Processos"
+    IDS_BTN_SALVAR_LOG        "?? Salvar Log"
+    IDS_CHECK_FAVORITAR_TODOS "? Favoritar grupo"
+    IDS_COL_FAVORITO          "?"
+    IDS_COL_PROCESSO          "Processo"
+    IDS_COL_PRIORIDADE        "Prioridade"
+    IDS_COL_STATUS            "Status"
+    IDS_COL_MEMORIA           "Memória (KB)"
+    IDS_MSG_DIGITE_NOME       "Digite ao menos um nome de processo."
+    IDS_MSG_LOG_SALVO         "Log salvo com sucesso em 'log_prioridades.txt'."
+    IDS_MSG_LOG_ERRO          "Falha ao abrir o arquivo de log."
+    IDS_MSG_PROC_NAO_ENCONTRADO "Processo '%s' não encontrado."
+    IDS_MSG_CONCLUIDO         "Concluído"
+    IDS_MSG_AVISO             "Aviso"
+    IDS_MSG_ERRO              "Erro"
+    IDS_MSG_OK                "OK"
+    IDS_MSG_NAO_LOCALIZADO    "Não localizado"
+    IDS_EXEMPLO_STATUS        "Prioridade alterada ??"
+    IDS_EXEMPLO_PROCESSO      "chrome.exe"
+    IDS_EXEMPLO_PRIORIDADE    "Normal"
+    IDS_EXEMPLO_MEMORIA       "123456 KB"
+    IDS_EXEMPLO_COLUNA        ""
+    IDS_TITULO_JANELA         "Gerenciador de Prioridades — V2"
+END
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "&Arquivo"
+    BEGIN
+        MENUITEM "Exportar Log", IDM_EXPORT_LOG
+        MENUITEM SEPARATOR
+        MENUITEM "Sair", IDM_EXIT
+    END
+    POPUP "&Ajuda"
+    BEGIN
+        MENUITEM "Sobre...", IDM_ABOUT
+    END
+END

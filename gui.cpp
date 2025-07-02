@@ -3,6 +3,7 @@
 #include "gui_layout.h"
 #include "listview_logic.h"
 #include "favoritos.h"
+#include "resource.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <string>
@@ -21,6 +22,12 @@ void AtualizarArquivoFavoritos(HWND hList) {
     SalvarFavoritosArquivo(hList);
 }
 
+static std::wstring LoadResString(UINT id) {
+    wchar_t buf[256] = {};
+    LoadStringW(GetModuleHandleW(nullptr), id, buf, 256);
+    return buf;
+}
+
 // Implementação do WndProc e CriarJanela
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
@@ -29,6 +36,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     switch (msg) {
     case WM_CREATE: {
         CriarControlesJanela(hwnd, hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada, hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog, hCheckFavoritarTodos);
+        SetWindowTextW(hwnd, LoadResString(IDS_TITULO_JANELA).c_str());
         break;
     }
     case WM_COMMAND: {
@@ -72,14 +80,14 @@ void CriarJanela(HINSTANCE hInstance, int nCmdShow) {
     RegisterClass(&wc);
 
     HWND hwnd = CreateWindowEx(
-        0, classeJanela, L"Gerenciador de Prioridades — V2",
+        0, classeJanela, LoadResString(IDS_TITULO_JANELA).c_str(),
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 740, 500,
         nullptr, nullptr, hInstance, nullptr
     );
 
     if (!hwnd) {
-        MessageBoxW(nullptr, L"Falha ao criar janela!", L"Erro", MB_ICONERROR);
+        MessageBoxW(nullptr, LoadResString(IDS_MSG_LOG_ERRO).c_str(), LoadResString(IDS_MSG_ERRO).c_str(), MB_ICONERROR);
         return;
     }
 

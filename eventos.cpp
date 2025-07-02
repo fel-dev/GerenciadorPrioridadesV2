@@ -4,6 +4,7 @@
 #include "processos.h"
 #include "favoritos.h"
 #include "utils.h"
+#include "resource.h"
 #include <windows.h>
 #include <commctrl.h>
 #include <tlhelp32.h>
@@ -20,6 +21,12 @@
 
 int ultimaColunaOrdenada = -1;
 std::map<int, bool> ordemCrescentePorColuna;
+
+static std::wstring LoadResString(UINT id) {
+    wchar_t buf[256] = {};
+    LoadStringW(GetModuleHandleW(nullptr), id, buf, 256);
+    return buf;
+}
 
 HWND GetListaResultados(HWND hwndPai) {
     return FindWindowEx(hwndPai, nullptr, WC_LISTVIEW, nullptr);
@@ -38,7 +45,7 @@ void AdicionarNaLista(HWND hList, const std::wstring& favorito, const std::wstri
 void SalvarLogParaArquivo(HWND hList) {
     std::wofstream arquivo(L"log_prioridades.txt", std::ios::app);
     if (!arquivo.is_open()) {
-        MessageBoxW(nullptr, L"Falha ao abrir o arquivo de log.", L"Erro", MB_OK | MB_ICONERROR);
+        MessageBoxW(nullptr, LoadResString(IDS_MSG_LOG_ERRO).c_str(), LoadResString(IDS_MSG_ERRO).c_str(), MB_OK | MB_ICONERROR);
         return;
     }
     std::time_t t = std::time(nullptr);
@@ -52,11 +59,11 @@ void SalvarLogParaArquivo(HWND hList) {
     // Nome da coluna ordenada
     std::wstring nomeColuna = L"(sem ordenação)";
     switch (ultimaColunaOrdenada) {
-        case 0: nomeColuna = L"Favorito"; break;
-        case 1: nomeColuna = L"Processo"; break;
-        case 2: nomeColuna = L"Prioridade"; break;
-        case 3: nomeColuna = L"Status"; break;
-        case 4: nomeColuna = L"Memória (KB)"; break;
+        case 0: nomeColuna = LoadResString(IDS_COL_FAVORITO); break;
+        case 1: nomeColuna = LoadResString(IDS_COL_PROCESSO); break;
+        case 2: nomeColuna = LoadResString(IDS_COL_PRIORIDADE); break;
+        case 3: nomeColuna = LoadResString(IDS_COL_STATUS); break;
+        case 4: nomeColuna = LoadResString(IDS_COL_MEMORIA); break;
     }
     std::wstring direcao = L"";
     if (ultimaColunaOrdenada != -1) {
@@ -70,11 +77,11 @@ void SalvarLogParaArquivo(HWND hList) {
         ListView_GetItemText(hList, i, 0, favorito, 260);
         ListView_GetItemText(hList, i, 1, nome, 260);
         ListView_GetItemText(hList, i, 2, status, 260);
-        arquivo << favorito << L"  " << nome << L"  " << status << L"\n";
+        arquivo << favorito << L"  4 " << nome << L"  4 " << status << L"\n";
     }
     arquivo << L"=============================\n";
     arquivo.close();
-    MessageBoxW(nullptr, L"Log salvo com sucesso em 'log_prioridades.txt'.", L"OK", MB_OK | MB_ICONINFORMATION);
+    MessageBoxW(nullptr, LoadResString(IDS_MSG_LOG_SALVO).c_str(), LoadResString(IDS_MSG_OK).c_str(), MB_OK | MB_ICONINFORMATION);
 }
 
 void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
@@ -83,7 +90,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     std::wstring texto(buffer);
 
     if (texto.empty() && LOWORD(wParam) != ID_BTN_ATUALIZAR && LOWORD(wParam) != ID_BTN_APLICAR_SELECIONADOS && LOWORD(wParam) != ID_BTN_BUSCAR && LOWORD(wParam) != ID_BTN_APLICAR_PRIORIDADE && LOWORD(wParam) != ID_BTN_SALVAR_LOG) {
-        MessageBoxW(hwnd, L"Digite ao menos um nome de processo.", L"Aviso", MB_OK | MB_ICONWARNING);
+        MessageBoxW(hwnd, LoadResString(IDS_MSG_DIGITE_NOME).c_str(), LoadResString(IDS_MSG_AVISO).c_str(), MB_OK | MB_ICONWARNING);
         return;
     }
 
@@ -135,12 +142,12 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
                 if (hProc) {
                     DWORD priClass = GetPriorityClass(hProc);
                     switch (priClass) {
-                        case IDLE_PRIORITY_CLASS: strPrioridade = L"Baixa"; break;
-                        case NORMAL_PRIORITY_CLASS: strPrioridade = L"Normal"; break;
-                        case HIGH_PRIORITY_CLASS: strPrioridade = L"Alta"; break;
-                        case REALTIME_PRIORITY_CLASS: strPrioridade = L"Tempo real"; break;
-                        case ABOVE_NORMAL_PRIORITY_CLASS: strPrioridade = L"Acima do normal"; break;
-                        case BELOW_NORMAL_PRIORITY_CLASS: strPrioridade = L"Abaixo do normal"; break;
+                        case IDLE_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Baixa"; break;
+                        case NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Normal"; break;
+                        case HIGH_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Alta"; break;
+                        case REALTIME_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Tempo real"; break;
+                        case ABOVE_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Acima do normal"; break;
+                        case BELOW_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Abaixo do normal"; break;
                         default: break;
                     }
                     if (GetProcessMemoryInfo(hProc, &pmc, sizeof(pmc))) {
@@ -206,7 +213,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             }
         }
         std::wstring msg = L"Alterações aplicadas: " + std::to_wstring(alterados);
-        MessageBoxW(hwnd, msg.c_str(), L"Concluído", MB_OK | MB_ICONINFORMATION);
+        MessageBoxW(hwnd, msg.c_str(), LoadResString(IDS_MSG_CONCLUIDO).c_str(), MB_OK | MB_ICONINFORMATION);
         break;
     }
     case ID_BTN_BUSCAR: {
@@ -216,7 +223,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 260);
         std::wstring alvo(buffer);
         if (alvo.empty()) {
-            MessageBoxW(hwnd, L"Digite o nome do processo para buscar.", L"Aviso", MB_OK | MB_ICONWARNING);
+            MessageBoxW(hwnd, LoadResString(IDS_MSG_DIGITE_NOME).c_str(), LoadResString(IDS_MSG_AVISO).c_str(), MB_OK | MB_ICONWARNING);
             break;
         }
         // Adiciona .exe se necessário
@@ -236,8 +243,9 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             }
         }
         if (!encontrado) {
-            MessageBoxW(hwnd, (L"Processo \"" + alvo + L"\" não encontrado.").c_str(),
-                        L"Não localizado", MB_OK | MB_ICONINFORMATION);
+            wchar_t msg[512];
+            swprintf(msg, 512, LoadResString(IDS_MSG_PROC_NAO_ENCONTRADO).c_str(), alvo.c_str());
+            MessageBoxW(hwnd, msg, LoadResString(IDS_MSG_NAO_LOCALIZADO).c_str(), MB_OK | MB_ICONINFORMATION);
         }
         break;
     }

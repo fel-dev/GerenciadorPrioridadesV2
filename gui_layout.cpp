@@ -11,6 +11,11 @@ static std::wstring LoadResString(UINT id) {
     return buf;
 }
 
+// Função utilitária para criar botões Unicode
+HWND CriarBotaoUnicode(HWND hwnd, int x, int y, int w, int h, int id, const wchar_t* texto) {
+    return CreateWindowW(L"BUTTON", texto, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, x, y, w, h, hwnd, (HMENU)id, nullptr, nullptr);
+}
+
 void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos) {
     // Campo de texto (EDIT)
     hEditEntrada = CreateWindowW(L"EDIT", L"",
@@ -18,18 +23,11 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
         20, 20, 450, 60,
         hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
 
-    // Botão Buscar
-    hBtnBuscar = CreateWindowW(L"BUTTON", LoadResString(IDS_BTN_BUSCAR).c_str(),
-        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        480, 20, 110, 30,
-        hwnd, (HMENU)ID_BTN_BUSCAR, nullptr, nullptr);
+    // Botão Buscar (Unicode)
+    hBtnBuscar = CriarBotaoUnicode(hwnd, 480, 20, 110, 30, ID_BTN_BUSCAR, L"🔍 Buscar");
 
-    // Checkbox Favoritar todos com o mesmo nome
-    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", LoadResString(IDS_CHECK_FAVORITAR_TODOS).c_str(),
-        WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX,
-        480, 60, 220, 30,
-        hwnd, (HMENU)ID_CHECK_FAVORITAR_TODOS, nullptr, nullptr);
-    // Deixa o checkbox marcado por padrão
+    // Checkbox Favoritar todos com o mesmo nome (Unicode)
+    hCheckFavoritarTodos = CriarBotaoUnicode(hwnd, 480, 60, 220, 30, ID_CHECK_FAVORITAR_TODOS, L"⭐ Favoritar grupo");
     SendMessageW(hCheckFavoritarTodos, BM_SETCHECK, BST_CHECKED, 0);
 
     // ComboBox de prioridade
@@ -44,23 +42,14 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Tempo real");
     SendMessageW(hComboPrioridade, CB_SETCURSEL, 2, 0); // seleciona "Alta" por padrão
 
-    // Botão Aplicar Prioridade
-    hBtnAplicarPrioridade = CreateWindowW(L"BUTTON", LoadResString(IDS_BTN_APLICAR_PRIOR).c_str(),
-        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        230, 95, 150, 30,
-        hwnd, (HMENU)ID_BTN_APLICAR_PRIORIDADE, nullptr, nullptr);
+    // Botão Aplicar Prioridade (Unicode)
+    hBtnAplicarPrioridade = CriarBotaoUnicode(hwnd, 230, 95, 150, 30, ID_BTN_APLICAR_PRIORIDADE, L"🆗 Aplicar Prioridade");
 
-    // Botão Atualizar Processos
-    hBtnAtualizar = CreateWindowW(L"BUTTON", LoadResString(IDS_BTN_ATUALIZAR).c_str(),
-        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        390, 95, 150, 30,
-        hwnd, (HMENU)ID_BTN_ATUALIZAR, nullptr, nullptr);
+    // Botão Atualizar Processos (Unicode)
+    hBtnAtualizar = CriarBotaoUnicode(hwnd, 390, 95, 150, 30, ID_BTN_ATUALIZAR, L"🔃 Atualizar Processos");
 
-    // Botão Salvar Log
-    hBtnSalvarLog = CreateWindowW(L"BUTTON", LoadResString(IDS_BTN_SALVAR_LOG).c_str(),
-        WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-        550, 95, 150, 30,
-        hwnd, (HMENU)ID_BTN_SALVAR_LOG, nullptr, nullptr);
+    // Botão Salvar Log (Unicode)
+    hBtnSalvarLog = CriarBotaoUnicode(hwnd, 550, 95, 150, 30, ID_BTN_SALVAR_LOG, L"📎 Salvar Log");
 
     // Linha divisória visual
     CreateWindowW(L"STATIC", nullptr,

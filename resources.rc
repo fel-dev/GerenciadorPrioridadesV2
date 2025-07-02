@@ -28,7 +28,7 @@ BEGIN
     IDS_EXEMPLO_PRIORIDADE    "Normal"
     IDS_EXEMPLO_MEMORIA       "123456 KB"
     IDS_EXEMPLO_COLUNA        "⭐"
-    IDS_TITULO_JANELA         "Gerenciador de Prioridades — V2.1"
+    IDS_TITULO_JANELA         "Gerenciador de Prioridades — V2.2.0"
     IDS_MSG_PRIORIDADE_OK     "✅ Prioridade alterada"
     IDS_MSG_PRIORIDADE_ERRO   "❌ Falha ao alterar "
     IDS_PRIORIDADE_BAIXA      "Baixa (IDLE)"
@@ -39,7 +39,7 @@ BEGIN
     IDS_PRIORIDADE_ABAIXO     "Abaixo do normal"
     IDS_SOBRE_MSG             "Gerenciador de Prioridades V2\nLicença: MIT\nAutor: Felipe + Copilot\n\n 📖 Dedicação : \n\nQue cada processo\n     tenha uma prioridade.\n\nE cada pessoa, \n     um propósito.\n\nFeito com fé, \n     dedicação, \n          e propósito.\n\nQue Ele nos guie\n     sempre.🙏"
     IDS_SOBRE_TITULO          "Sobre"
-    IDS_BTN_REVERTER          "⏪ Reverter alterações (TODO)"
+    IDS_BTN_REVERTER          "⏪ Reverter alterações"
 END
 
 IDR_MAINMENU MENU

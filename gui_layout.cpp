@@ -30,12 +30,30 @@ void SetFonteEmoji(HWND hWnd) {
     SendMessageW(hWnd, WM_SETFONT, (WPARAM)hFontEmoji, TRUE);
 }
 
+// Subclasse para o campo de busca: permite buscar ao pressionar Enter
+LRESULT CALLBACK EditBuscaProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_GETDLGCODE) {
+        // Permite capturar Enter
+        return DLGC_WANTALLKEYS | CallWindowProc((WNDPROC)GetProp(hwnd, L"OldEditProc"), hwnd, msg, wParam, lParam);
+    }
+    if (msg == WM_KEYDOWN && wParam == VK_RETURN) {
+        HWND hwndParent = GetParent(hwnd);
+        // Simula clique no botão Buscar
+        SendMessage(hwndParent, WM_COMMAND, MAKELONG(ID_BTN_BUSCAR, BN_CLICKED), (LPARAM)hwnd);
+        return 0; // Não insere quebra de linha
+    }
+    return CallWindowProc((WNDPROC)GetProp(hwnd, L"OldEditProc"), hwnd, msg, wParam, lParam);
+}
+
 void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos) {
-    // Campo de texto (EDIT)
+    // Campo de texto (EDIT) - linha única
     hEditEntrada = CreateWindowW(L"EDIT", L"",
-        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE,
-        20, 20, 450, 60,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+        20, 20, 450, 25,
         hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
+
+    // Subclasse o campo de busca para capturar Enter
+    SetProp(hEditEntrada, L"OldEditProc", (HANDLE)SetWindowLongPtr(hEditEntrada, GWLP_WNDPROC, (LONG_PTR)EditBuscaProc));
 
     // Botão Buscar (Unicode)
     hBtnBuscar = CriarBotaoUnicode(hwnd, 480, 20, 110, 30, ID_BTN_BUSCAR, L"🔍 Buscar");

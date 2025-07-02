@@ -22,6 +22,28 @@ void AtualizarArquivoFavoritos(HWND hList) {
     SalvarFavoritosArquivo(hList);
 }
 
+// Trata atalhos de teclado na janela principal
+void TratarAtalhos(HWND hwnd, WPARAM wParam) {
+    if (GetKeyState(VK_CONTROL) & 0x8000) {
+        switch (wParam) {
+            case 'R':
+                TratarEventoBotao(hwnd, ID_BTN_ATUALIZAR);
+                break;
+            case 'L':
+                TratarEventoBotao(hwnd, ID_BTN_SALVAR_LOG);
+                break;
+            case 'F':
+                MessageBoxW(hwnd, L"[TODO] Mostrar apenas favoritos 😄", L"Atalho Ctrl+F", MB_OK);
+                break;
+            case 'M':
+                MessageBoxW(hwnd, L"[TODO] Ativar Modo Jogo! 🕹️", L"Atalho Ctrl+M", MB_OK);
+                break;
+        }
+    } else if (wParam == VK_ESCAPE) {
+        PostQuitMessage(0);
+    }
+}
+
 static std::wstring LoadResString(UINT id) {
     wchar_t buf[256] = {};
     LoadStringW(GetModuleHandleW(nullptr), id, buf, 256);
@@ -99,6 +121,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         break;
     }
+    case WM_KEYDOWN:
+        TratarAtalhos(hwnd, wParam);
+        break;
     case WM_DESTROY:
         if (hBrushLight) DeleteObject(hBrushLight);
         PostQuitMessage(0);

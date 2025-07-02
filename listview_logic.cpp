@@ -1,4 +1,4 @@
-#include "listview_logic.h"
+Ôªø#include "listview_logic.h"
 #include "utils.h"
 #include <commctrl.h>
 #include <cwchar>
@@ -9,7 +9,7 @@ int CALLBACK CompararItens(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort) {
     ListView_GetItemText(params->hList, lParam1, params->column, texto1, 256);
     ListView_GetItemText(params->hList, lParam2, params->column, texto2, 256);
     int resultado = 0;
-    if (params->column == 4) { // MemÛria (coluna 4): ordenar como n˙mero
+    if (params->column == 4) { // Mem√≥ria (coluna 4): ordenar como n√∫mero
         int mem1 = _wtoi(texto1);
         int mem2 = _wtoi(texto2);
         resultado = mem1 - mem2;
@@ -45,48 +45,48 @@ LRESULT TratarCustomDraw(LPNMLVCUSTOMDRAW lplvcd) {
     case CDDS_PREPAINT:
         return CDRF_NOTIFYITEMDRAW;
     case CDDS_ITEMPREPAINT: {
-        // Pega valor da coluna MemÛria
+        // Pega valor da coluna Mem√≥ria
         WCHAR buffer[256] = {};
         ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 4, buffer, 256);
         int memKB = _wtoi(buffer);
         // Pega valor da coluna Favorito
         WCHAR estrela[8] = {};
         ListView_GetItemText(lplvcd->nmcd.hdr.hwndFrom, (int)lplvcd->nmcd.dwItemSpec, 0, estrela, 8);
-        if (wcscmp(estrela, L"?") == 0) {
+        if (wcscmp(estrela, L"‚≠ê") == 0) {
             lplvcd->clrTextBk = RGB(230, 255, 230); // verde-claro para favorito
         } else if (memKB > 512000) {
             lplvcd->clrTextBk = RGB(255, 255, 200); // amarelo claro para RAM alta
         }
-        return CDRF_DODEFAULT;
+        return CDRF_NEWFONT;
     }
     }
     return CDRF_DODEFAULT;
 }
 
-// Altera o tÌtulo (texto) de uma coluna do ListView em tempo de execuÁ„o.
-// ⁄til para mudar dinamicamente o nome de uma coluna, por exemplo, apÛs uma aÁ„o do usu·rio.
+// Altera o t√≠tulo (texto) de uma coluna do ListView em tempo de execu√ß√£o.
+// √ötil para mudar dinamicamente o nome de uma coluna, por exemplo, ap√≥s uma a√ß√£o do usu√°rio.
 void ListView_SetColumnTitle(HWND hList, int col, const std::wstring& title) {
     LVCOLUMNW lvc = { 0 };
     lvc.mask = LVCF_TEXT; // Indica que queremos alterar apenas o texto
     lvc.pszText = const_cast<LPWSTR>(title.c_str()); // Converte std::wstring para LPWSTR
-    ListView_SetColumn(hList, col, &lvc); // Aplica a alteraÁ„o na coluna desejada
+    ListView_SetColumn(hList, col, &lvc); // Aplica a altera√ß√£o na coluna desejada
 }
 
-// Altera a largura de uma coluna do ListView em tempo de execuÁ„o.
-// Pode ser usado para ajustar o layout conforme o conte˙do ou preferÍncias do usu·rio.
+// Altera a largura de uma coluna do ListView em tempo de execu√ß√£o.
+// Pode ser usado para ajustar o layout conforme o conte√∫do ou prefer√™ncias do usu√°rio.
 void ListView_SetColumnWidthEx(HWND hList, int col, int width) {
     ListView_SetColumnWidth(hList, col, width); // Define a largura da coluna
 }
 
 // "Mostra" ou "esconde" uma coluna do ListView.
-// N„o existe esconder coluna nativamente, ent„o aqui simulamos escondendo ao definir largura zero.
-// ⁄til para interfaces que permitem ao usu·rio personalizar quais colunas deseja ver.
+// N√£o existe esconder coluna nativamente, ent√£o aqui simulamos escondendo ao definir largura zero.
+// √ötil para interfaces que permitem ao usu√°rio personalizar quais colunas deseja ver.
 void ListView_ShowColumn(HWND hList, int col, bool show) {
     HWND hHeader = ListView_GetHeader(hList);
     if (!hHeader) return;
     LONG style = GetWindowLong(hList, GWL_STYLE);
     if (show) {
-        style |= LVS_REPORT; // Garante que o modo relatÛrio est· ativo
+        style |= LVS_REPORT; // Garante que o modo relat√≥rio est√° ativo
     } else {
         // Simula esconder a coluna ajustando a largura para zero
         ListView_SetColumnWidth(hList, col, 0);
@@ -103,7 +103,7 @@ void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool f
         ListView_GetItemText(hListResult, pnm->iItem, 1, nomeAlvo, 260);
         std::wstring nomeAlvoStr = nomeAlvo;
         trim_right(nomeAlvoStr);
-        bool marcar = (wcscmp(atual, L"?") != 0);
+        bool marcar = (wcscmp(atual, L"‚≠ê") != 0);
         int total = ListView_GetItemCount(hListResult);
         if (favoritarTodos) {
             for (int i = 0; i < total; ++i) {
@@ -112,11 +112,13 @@ void TratarDoubleClick(HWND hwnd, HWND hListResult, LPNMITEMACTIVATE pnm, bool f
                 std::wstring nomeStr = nome;
                 trim_right(nomeStr);
                 if (equals_ignore_case(nomeStr, nomeAlvoStr)) {
-                    ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"?" : (LPWSTR)L"");
+                    ListView_SetItemText(hListResult, i, 0, marcar ? (LPWSTR)L"‚≠ê" : (LPWSTR)L"");
+                    ListView_RedrawItems(hListResult, i, i);
                 }
             }
         } else {
-            ListView_SetItemText(hListResult, pnm->iItem, 0, marcar ? (LPWSTR)L"?" : (LPWSTR)L"");
+            ListView_SetItemText(hListResult, pnm->iItem, 0, marcar ? (LPWSTR)L"‚≠ê" : (LPWSTR)L"");
+            ListView_RedrawItems(hListResult, pnm->iItem, pnm->iItem);
         }
         AtualizarArquivoFavoritos(hListResult);
     }

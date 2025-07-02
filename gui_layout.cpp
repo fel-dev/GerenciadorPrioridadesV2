@@ -87,6 +87,15 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
         20, 140, 680, 280,
         hwnd, (HMENU)IDC_LISTVIEW_RESULT, nullptr, nullptr);
 
+    // Aplica fonte emoji na ListView
+    HFONT hFontEmoji = CreateFontW(
+        18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+        DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+        L"Segoe UI Emoji"
+    );
+    SendMessageW(hListResult, WM_SETFONT, (WPARAM)hFontEmoji, TRUE);
+
     // Estilo grid e full row select
     ListView_SetExtendedListViewStyle(hListResult,
         LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);

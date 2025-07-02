@@ -166,7 +166,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     case WM_CONTEXTMENU: {
         if ((HWND)wParam == hListResult) {
             HMENU hMenu = CreatePopupMenu();
-            AppendMenuW(hMenu, MF_STRING, IDM_REVERTER_PROCESSO, L"⏪ Reverter este processo (TODO)");
+            AppendMenuW(hMenu, MF_STRING, IDM_REVERTER_PROCESSO, L"⏪ Reverter este processo");
             POINT pt;
             pt.x = LOWORD(lParam);
             pt.y = HIWORD(lParam);

@@ -6,3 +6,6 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
 
 // Função utilitária para criar botões Unicode
 HWND CriarBotaoUnicode(HWND hwnd, int x, int y, int w, int h, int id, const wchar_t* texto);
+
+// Função utilitária para aplicar fonte emoji
+void SetFonteEmoji(HWND hWnd);

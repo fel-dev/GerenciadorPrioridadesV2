@@ -16,6 +16,20 @@ HWND CriarBotaoUnicode(HWND hwnd, int x, int y, int w, int h, int id, const wcha
     return CreateWindowW(L"BUTTON", texto, WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, x, y, w, h, hwnd, (HMENU)id, nullptr, nullptr);
 }
 
+// Função utilitária para aplicar fonte emoji
+void SetFonteEmoji(HWND hWnd) {
+    static HFONT hFontEmoji = nullptr;
+    if (!hFontEmoji) {
+        hFontEmoji = CreateFontW(
+            18, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE,
+            L"Segoe UI Emoji"
+        );
+    }
+    SendMessageW(hWnd, WM_SETFONT, (WPARAM)hFontEmoji, TRUE);
+}
+
 void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos) {
     // Campo de texto (EDIT)
     hEditEntrada = CreateWindowW(L"EDIT", L"",
@@ -25,10 +39,15 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
 
     // Botão Buscar (Unicode)
     hBtnBuscar = CriarBotaoUnicode(hwnd, 480, 20, 110, 30, ID_BTN_BUSCAR, L"🔍 Buscar");
+    SetFonteEmoji(hBtnBuscar);
 
     // Checkbox Favoritar todos com o mesmo nome (Unicode)
-    hCheckFavoritarTodos = CriarBotaoUnicode(hwnd, 480, 60, 220, 30, ID_CHECK_FAVORITAR_TODOS, L"⭐ Favoritar grupo");
+    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", L"⭐ Favoritar grupo",
+        WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_LEFTTEXT,
+        480, 60, 220, 30,
+        hwnd, (HMENU)ID_CHECK_FAVORITAR_TODOS, nullptr, nullptr);
     SendMessageW(hCheckFavoritarTodos, BM_SETCHECK, BST_CHECKED, 0);
+    SetFonteEmoji(hCheckFavoritarTodos);
 
     // ComboBox de prioridade
     hComboPrioridade = CreateWindowW(L"COMBOBOX", nullptr,
@@ -44,12 +63,15 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
 
     // Botão Aplicar Prioridade (Unicode)
     hBtnAplicarPrioridade = CriarBotaoUnicode(hwnd, 230, 95, 150, 30, ID_BTN_APLICAR_PRIORIDADE, L"🆗 Aplicar Prioridade");
+    SetFonteEmoji(hBtnAplicarPrioridade);
 
     // Botão Atualizar Processos (Unicode)
     hBtnAtualizar = CriarBotaoUnicode(hwnd, 390, 95, 150, 30, ID_BTN_ATUALIZAR, L"🔃 Atualizar Processos");
+    SetFonteEmoji(hBtnAtualizar);
 
     // Botão Salvar Log (Unicode)
     hBtnSalvarLog = CriarBotaoUnicode(hwnd, 550, 95, 150, 30, ID_BTN_SALVAR_LOG, L"📎 Salvar Log");
+    SetFonteEmoji(hBtnSalvarLog);
 
     // Linha divisória visual
     CreateWindowW(L"STATIC", nullptr,

@@ -37,7 +37,7 @@ BEGIN
     IDS_PRIORIDADE_ACIMA      "Acima do normal"
     IDS_PRIORIDADE_TEMPO_REAL "Tempo real"
     IDS_PRIORIDADE_ABAIXO     "Abaixo do normal"
-    IDS_SOBRE_MSG             "Gerenciador de Prioridades V2\nLicença: MIT\nAutor: Felipe + Copilot"
+    IDS_SOBRE_MSG             "Gerenciador de Prioridades V2\nLicença: MIT\nAutor: Felipe + Copilot\n\n 📖 Dedicação : \n\nQue cada processo\n     tenha uma prioridade.\n\nE cada pessoa, \n     um propósito.\n\nFeito com fé, \n     dedicação, \n          e propósito.\n\nQue Ele nos guie\n     sempre.🙏"
     IDS_SOBRE_TITULO          "Sobre"
     IDS_BTN_REVERTER          "⏪ Reverter alterações (TODO)"
 END

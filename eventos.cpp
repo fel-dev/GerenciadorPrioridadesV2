@@ -268,6 +268,9 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             swprintf(msg, 512, LoadResString(IDS_MSG_PROC_NAO_ENCONTRADO).c_str(), alvo.c_str());
             MessageBoxW(hwnd, msg, LoadResString(IDS_MSG_NAO_LOCALIZADO).c_str(), MB_OK | MB_ICONINFORMATION);
         }
+        // Foca novamente no campo de texto após buscar
+        HWND hEdit = GetDlgItem(hwnd, ID_EDIT_ENTRADA);
+        if (hEdit) SetFocus(hEdit);
         break;
     }
     case ID_BTN_SALVAR_LOG: {

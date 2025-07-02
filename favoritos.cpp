@@ -1,4 +1,4 @@
-#include "favoritos.h"
+﻿#include "favoritos.h"
 #include "utils.h"
 #include <fstream>
 #include <cwchar>
@@ -24,7 +24,7 @@ void SalvarFavoritosArquivo(HWND hList) {
     for (int i = 0; i < total; ++i) {
         wchar_t estrela[8] = {};
         ListView_GetItemText(hList, i, 0, estrela, 8);
-        if (wcscmp(estrela, L"?") == 0) {
+        if (wcscmp(estrela, L"⭐") == 0) {
             wchar_t nomeProc[256] = {};
             ListView_GetItemText(hList, i, 1, nomeProc, 256);
             favFile << nomeProc << L"\n";

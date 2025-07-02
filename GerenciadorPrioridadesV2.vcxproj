@@ -129,6 +129,7 @@
     <ClInclude Include="gui_layout.h" />
     <ClInclude Include="listview_logic.h" />
     <ClInclude Include="processos.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="utils.h" />
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +142,9 @@
     <ClCompile Include="processos.cpp" />
     <ClCompile Include="util.cpp" />
     <ClCompile Include="utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="resources.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

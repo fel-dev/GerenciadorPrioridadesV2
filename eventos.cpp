@@ -118,15 +118,15 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             bool ok = AlterarPrioridade(nome, prioridade);
             std::wstring prioridadeStr;
             switch (prioridade) {
-                case HIGH_PRIORITY_CLASS: prioridadeStr = L"Alta"; break;
-                case IDLE_PRIORITY_CLASS: prioridadeStr = L"Baixa"; break;
-                case NORMAL_PRIORITY_CLASS: prioridadeStr = L"Normal"; break;
-                case REALTIME_PRIORITY_CLASS: prioridadeStr = L"Tempo real"; break;
-                case ABOVE_NORMAL_PRIORITY_CLASS: prioridadeStr = L"Acima do normal"; break;
-                case BELOW_NORMAL_PRIORITY_CLASS: prioridadeStr = L"Abaixo do normal"; break;
+                case HIGH_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_ALTA); break;
+                case IDLE_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_BAIXA); break;
+                case NORMAL_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_NORMAL); break;
+                case REALTIME_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_TEMPO_REAL); break;
+                case ABOVE_NORMAL_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_ACIMA); break;
+                case BELOW_NORMAL_PRIORITY_CLASS: prioridadeStr = LoadResString(IDS_PRIORIDADE_ABAIXO); break;
                 default: prioridadeStr = L"(?)"; break;
             }
-            std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
+            std::wstring status = ok ? LoadResString(IDS_MSG_PRIORIDADE_OK) : LoadResString(IDS_MSG_PRIORIDADE_ERRO);
             if (hLista) {
                 LVITEMW item = { 0 };
                 item.mask = LVIF_TEXT;
@@ -161,12 +161,12 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
                 if (hProc) {
                     DWORD priClass = GetPriorityClass(hProc);
                     switch (priClass) {
-                        case IDLE_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Baixa"; break;
-                        case NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Normal"; break;
-                        case HIGH_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Alta"; break;
-                        case REALTIME_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Tempo real"; break;
-                        case ABOVE_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Acima do normal"; break;
-                        case BELOW_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_COL_PRIORIDADE) + L" Abaixo do normal"; break;
+                        case IDLE_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_BAIXA); break;
+                        case NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_NORMAL); break;
+                        case HIGH_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_ALTA); break;
+                        case REALTIME_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_TEMPO_REAL); break;
+                        case ABOVE_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_ACIMA); break;
+                        case BELOW_NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_ABAIXO); break;
                         default: break;
                     }
                     if (GetProcessMemoryInfo(hProc, &pmc, sizeof(pmc))) {
@@ -211,13 +211,13 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         if (!hLista || !hCombo) break;
         int selecao = (int)SendMessageW(hCombo, CB_GETCURSEL, 0, 0);
         DWORD prioridade = NORMAL_PRIORITY_CLASS;
-        std::wstring prioridadeStr = L"Normal";
+        std::wstring prioridadeStr = LoadResString(IDS_PRIORIDADE_NORMAL);
         switch (selecao) {
-            case 0: prioridade = IDLE_PRIORITY_CLASS; prioridadeStr = L"Baixa"; break;
-            case 1: prioridade = NORMAL_PRIORITY_CLASS; prioridadeStr = L"Normal"; break;
-            case 2: prioridade = HIGH_PRIORITY_CLASS; prioridadeStr = L"Alta"; break;
-            case 3: prioridade = ABOVE_NORMAL_PRIORITY_CLASS; prioridadeStr = L"Acima do normal"; break;
-            case 4: prioridade = REALTIME_PRIORITY_CLASS; prioridadeStr = L"Tempo real"; break;
+            case 0: prioridade = IDLE_PRIORITY_CLASS; prioridadeStr = LoadResString(IDS_PRIORIDADE_BAIXA); break;
+            case 1: prioridade = NORMAL_PRIORITY_CLASS; prioridadeStr = LoadResString(IDS_PRIORIDADE_NORMAL); break;
+            case 2: prioridade = HIGH_PRIORITY_CLASS; prioridadeStr = LoadResString(IDS_PRIORIDADE_ALTA); break;
+            case 3: prioridade = ABOVE_NORMAL_PRIORITY_CLASS; prioridadeStr = LoadResString(IDS_PRIORIDADE_ACIMA); break;
+            case 4: prioridade = REALTIME_PRIORITY_CLASS; prioridadeStr = LoadResString(IDS_PRIORIDADE_TEMPO_REAL); break;
             default: break;
         }
         int count = ListView_GetItemCount(hLista);
@@ -227,7 +227,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
                 wchar_t buffer[260];
                 ListView_GetItemText(hLista, i, 1, buffer, 260);
                 bool ok = AlterarPrioridade(buffer, prioridade);
-                std::wstring status = ok ? L"Prioridade alterada ✅" : L"Falha ao alterar ❌";
+                std::wstring status = ok ? LoadResString(IDS_MSG_PRIORIDADE_OK) : LoadResString(IDS_MSG_PRIORIDADE_ERRO);
                 ListView_SetItemText(hLista, i, 2, (LPWSTR)prioridadeStr.c_str()); // Prioridade
                 ListView_SetItemText(hLista, i, 3, (LPWSTR)status.c_str()); // Status
                 ++alterados;

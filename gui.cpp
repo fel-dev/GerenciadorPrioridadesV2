@@ -69,7 +69,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 TratarEventoBotao(hwnd, ID_BTN_SALVAR_LOG);
                 break;
             case IDM_ABOUT:
-                MessageBoxW(hwnd, L"Gerenciador de Prioridades V2\nLicença: MIT\nAutor: Felipe + Copilot", L"Sobre", MB_OK | MB_ICONINFORMATION);
+                MessageBoxW(hwnd, LoadResString(IDS_SOBRE_MSG).c_str(), LoadResString(IDS_SOBRE_TITULO).c_str(), MB_OK | MB_ICONINFORMATION);
                 break;
             case IDM_EXIT:
                 PostQuitMessage(0);

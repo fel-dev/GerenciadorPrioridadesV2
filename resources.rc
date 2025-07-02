@@ -1,5 +1,7 @@
 #include "resource.h"
 
+IDI_APPICON ICON "appicon.ico"
+
 STRINGTABLE
 BEGIN
     IDS_BTN_BUSCAR            "?? Buscar"
@@ -27,4 +29,18 @@ BEGIN
     IDS_EXEMPLO_MEMORIA       "123456 KB"
     IDS_EXEMPLO_COLUNA        ""
     IDS_TITULO_JANELA         "Gerenciador de Prioridades — V2"
+END
+
+IDR_MAINMENU MENU
+BEGIN
+    POPUP "&Arquivo"
+    BEGIN
+        MENUITEM "Exportar Log", IDM_EXPORT_LOG
+        MENUITEM SEPARATOR
+        MENUITEM "Sair", IDM_EXIT
+    END
+    POPUP "&Ajuda"
+    BEGIN
+        MENUITEM "Sobre...", IDM_ABOUT
+    END
 END

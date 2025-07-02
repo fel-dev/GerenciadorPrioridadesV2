@@ -25,3 +25,10 @@
 #define IDS_EXEMPLO_MEMORIA       1023
 #define IDS_EXEMPLO_COLUNA        1024
 #define IDS_TITULO_JANELA         1025
+
+// Ícone e Menu
+#define IDI_APPICON   200
+#define IDR_MAINMENU  300
+#define IDM_EXIT      301
+#define IDM_ABOUT     302
+#define IDM_EXPORT_LOG 303

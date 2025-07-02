@@ -45,7 +45,7 @@ LRESULT CALLBACK EditBuscaProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam
     return CallWindowProc((WNDPROC)GetProp(hwnd, L"OldEditProc"), hwnd, msg, wParam, lParam);
 }
 
-void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos) {
+void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos, HWND& hBtnReverter) {
     // Campo de texto (EDIT) - linha única
     hEditEntrada = CreateWindowW(L"EDIT", L"",
         WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
@@ -162,4 +162,8 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     ListView_SetItemText(hListResult, 0, 2, (LPWSTR)exemploPrior.c_str());
     ListView_SetItemText(hListResult, 0, 3, (LPWSTR)exemploStatus.c_str());
     ListView_SetItemText(hListResult, 0, 4, (LPWSTR)exemploMem.c_str());
+
+    // Botão Reverter Alterações (Unicode)
+    hBtnReverter = CriarBotaoUnicode(hwnd, 20, 430, 200, 30, ID_BTN_REVERTER, LoadResString(IDS_BTN_REVERTER).c_str());
+    SetFonteEmoji(hBtnReverter);
 }

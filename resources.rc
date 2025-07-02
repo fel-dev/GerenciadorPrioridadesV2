@@ -5,10 +5,10 @@ IDI_APPICON ICON "appicon.ico"
 STRINGTABLE
 BEGIN
     IDS_BTN_BUSCAR            "🔍 Buscar"
-    IDS_BTN_APLICAR_PRIOR     "🆗 Aplicar"
+    IDS_BTN_APLICAR_PRIOR     "🆗 Aplicar Prioridade"
     IDS_BTN_ATUALIZAR         "🔃 Processos"
     IDS_BTN_SALVAR_LOG        "📎 Salvar Log"
-    IDS_CHECK_FAVORITAR_TODOS "⭐ Favoritar grupo"
+    IDS_CHECK_FAVORITAR_TODOS "⭐ Favoritar Grupo"
     IDS_COL_FAVORITO          "⭐"
     IDS_COL_PROCESSO          "Processo"
     IDS_COL_PRIORIDADE        "Prioridade"
@@ -39,6 +39,7 @@ BEGIN
     IDS_PRIORIDADE_ABAIXO     "Abaixo do normal"
     IDS_SOBRE_MSG             "Gerenciador de Prioridades V2\nLicença: MIT\nAutor: Felipe + Copilot"
     IDS_SOBRE_TITULO          "Sobre"
+    IDS_BTN_REVERTER          "⏪ Reverter alterações (TODO)"
 END
 
 IDR_MAINMENU MENU

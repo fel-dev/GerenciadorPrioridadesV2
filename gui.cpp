@@ -55,11 +55,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     static HWND hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada;
     static HWND hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog;
     static HWND hCheckFavoritarTodos;
+    static HWND hBtnReverter;
     static HBRUSH hBrushLight = nullptr;
     switch (msg) {
     case WM_CREATE: {
         HINSTANCE hInstance = (HINSTANCE)GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
-        CriarControlesJanela(hwnd, hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada, hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog, hCheckFavoritarTodos);
+        CriarControlesJanela(hwnd, hBtnAlta, hBtnBaixa, hBtnAtualizar, hBtnBuscar, hListResult, hEditEntrada, hComboPrioridade, hBtnAplicarPrioridade, hBtnSalvarLog, hCheckFavoritarTodos, hBtnReverter);
         SetWindowTextW(hwnd, LoadResString(IDS_TITULO_JANELA).c_str());
         // Ícone
         HICON hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_APPICON));
@@ -100,6 +101,47 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
                 int wmId = LOWORD(wParam);
                 if (wmId == 2001 || wmId == 2002 || wmId == ID_BTN_ATUALIZAR || wmId == ID_BTN_BUSCAR || wmId == ID_BTN_APLICAR_PRIORIDADE || wmId == ID_BTN_SALVAR_LOG) {
                     TratarEventoBotao(hwnd, wParam);
+                } else if (wmId == ID_BTN_REVERTER || wmId == IDM_REVERTER_PROCESSO) {
+                    // Chama a função de reversão para todos os selecionados ou processo do menu
+                    HWND hLista = hListResult;
+                    if (!hLista) break;
+                    int count = ListView_GetItemCount(hLista);
+                    int revertidos = 0;
+                    for (int i = 0; i < count; ++i) {
+                        if (ListView_GetItemState(hLista, i, LVIS_SELECTED) & LVIS_SELECTED) {
+                            wchar_t buffer[260];
+                            ListView_GetItemText(hLista, i, 1, buffer, 260);
+                            std::wstring nomeProc(buffer);
+                            extern std::map<std::wstring, DWORD> prioridadeOriginal;
+                            auto it = prioridadeOriginal.find(nomeProc);
+                            if (it != prioridadeOriginal.end()) {
+                                DWORD pid = GetProcessIdByName(buffer);
+                                HANDLE hProc = OpenProcess(PROCESS_SET_INFORMATION, FALSE, pid);
+                                bool ok = false;
+                                if (hProc) {
+                                    ok = SetPriorityClass(hProc, it->second);
+                                    CloseHandle(hProc);
+                                }
+                                std::wstring status = ok ? L"Prioridade revertida ⏪" : L"Falha ao reverter";
+                                // Atualiza ListView
+                                std::wstring priorStr;
+                                switch (it->second) {
+                                    case IDLE_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_BAIXA); break;
+                                    case NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_NORMAL); break;
+                                    case HIGH_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ALTA); break;
+                                    case REALTIME_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_TEMPO_REAL); break;
+                                    case ABOVE_NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ACIMA); break;
+                                    case BELOW_NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ABAIXO); break;
+                                    default: priorStr = L"(?)"; break;
+                                }
+                                ListView_SetItemText(hLista, i, 2, (LPWSTR)priorStr.c_str());
+                                ListView_SetItemText(hLista, i, 3, (LPWSTR)status.c_str());
+                                ++revertidos;
+                            }
+                        }
+                    }
+                    std::wstring msg = L"Revertidos: " + std::to_wstring(revertidos);
+                    MessageBoxW(hwnd, msg.c_str(), L"Reverter alterações", MB_OK | MB_ICONINFORMATION);
                 }
                 break;
             }
@@ -121,9 +163,59 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         }
         break;
     }
+    case WM_CONTEXTMENU: {
+        if ((HWND)wParam == hListResult) {
+            HMENU hMenu = CreatePopupMenu();
+            AppendMenuW(hMenu, MF_STRING, IDM_REVERTER_PROCESSO, L"⏪ Reverter este processo (TODO)");
+            POINT pt;
+            pt.x = LOWORD(lParam);
+            pt.y = HIWORD(lParam);
+            if (pt.x == -1 && pt.y == -1) {
+                // Tecla de contexto: pega posição do item selecionado
+                int iSel = ListView_GetNextItem(hListResult, -1, LVNI_SELECTED);
+                if (iSel != -1) {
+                    RECT rc;
+                    ListView_GetItemRect(hListResult, iSel, &rc, LVIR_BOUNDS);
+                    pt.x = rc.left;
+                    pt.y = rc.bottom;
+                    ClientToScreen(hListResult, &pt);
+                } else {
+                    GetCursorPos(&pt);
+                }
+            }
+            TrackPopupMenu(hMenu, TPM_LEFTALIGN | TPM_TOPALIGN, pt.x, pt.y, 0, hwnd, NULL);
+            DestroyMenu(hMenu);
+            return 0;
+        }
+        break;
+    }
     case WM_KEYDOWN:
         TratarAtalhos(hwnd, wParam);
         break;
+    case WM_SIZE: {
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        int margemX = 20;
+        int margemY = 20;
+        int larguraBtn = 200;
+        int alturaBtn = 30;
+        // Ajusta botão Reverter
+        if (hBtnReverter) {
+            SetWindowPos(hBtnReverter, nullptr,
+                margemX,
+                rc.bottom - alturaBtn - margemY,
+                larguraBtn, alturaBtn,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+        // Ajusta ListView
+        if (hListResult) {
+            SetWindowPos(hListResult, nullptr,
+                20, 140,
+                rc.right - 40, rc.bottom - 140 - alturaBtn - 2 * margemY,
+                SWP_NOZORDER | SWP_NOACTIVATE);
+        }
+        break;
+    }
     case WM_DESTROY:
         if (hBrushLight) DeleteObject(hBrushLight);
         PostQuitMessage(0);

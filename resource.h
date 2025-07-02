@@ -35,6 +35,7 @@
 #define IDS_PRIORIDADE_ABAIXO     1035
 #define IDS_SOBRE_MSG             1033
 #define IDS_SOBRE_TITULO          1034
+#define IDS_BTN_REVERTER          1042
 
 // Ícone e Menu
 #define IDI_APPICON   200
@@ -42,3 +43,6 @@
 #define IDM_EXIT      301
 #define IDM_ABOUT     302
 #define IDM_EXPORT_LOG 303
+#define IDM_REVERTER_PROCESSO 4002
+
+#define ID_BTN_REVERTER 2008

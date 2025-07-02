@@ -22,6 +22,9 @@
 int ultimaColunaOrdenada = -1;
 std::map<int, bool> ordemCrescentePorColuna;
 
+// Cache para prioridade original dos processos
+std::map<std::wstring, DWORD> prioridadeOriginal;
+
 static std::wstring LoadResString(UINT id) {
     wchar_t buf[256] = {};
     LoadStringW(GetModuleHandleW(nullptr), id, buf, 256);
@@ -84,6 +87,26 @@ void SalvarLogParaArquivo(HWND hList) {
     MessageBoxW(nullptr, LoadResString(IDS_MSG_LOG_SALVO).c_str(), LoadResString(IDS_MSG_OK).c_str(), MB_OK | MB_ICONINFORMATION);
 }
 
+// Função utilitária para obter o PID de um processo pelo nome
+DWORD GetProcessIdByName(const wchar_t* nomeProc) {
+    DWORD pid = 0;
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnap != INVALID_HANDLE_VALUE) {
+        PROCESSENTRY32W pe = { 0 };
+        pe.dwSize = sizeof(pe);
+        if (Process32FirstW(hSnap, &pe)) {
+            do {
+                if (_wcsicmp(pe.szExeFile, nomeProc) == 0) {
+                    pid = pe.th32ProcessID;
+                    break;
+                }
+            } while (Process32NextW(hSnap, &pe));
+        }
+        CloseHandle(hSnap);
+    }
+    return pid;
+}
+
 void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
     wchar_t buffer[2048] = {};
     GetWindowTextW(GetDlgItem(hwnd, ID_EDIT_ENTRADA), buffer, 2048);
@@ -140,6 +163,8 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
         }
         break;
     case ID_BTN_ATUALIZAR: {
+        // Limpa o cache de prioridades originais
+        prioridadeOriginal.clear();
         HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
         if (hSnap == INVALID_HANDLE_VALUE) break;
         PROCESSENTRY32W pe = { 0 };
@@ -160,6 +185,7 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
                 HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ProcessID);
                 if (hProc) {
                     DWORD priClass = GetPriorityClass(hProc);
+                    prioridadeOriginal[pe.szExeFile] = priClass; // Salva prioridade original
                     switch (priClass) {
                         case IDLE_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_BAIXA); break;
                         case NORMAL_PRIORITY_CLASS: strPrioridade = LoadResString(IDS_PRIORIDADE_NORMAL); break;
@@ -226,6 +252,17 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             if (ListView_GetItemState(hLista, i, LVIS_SELECTED) & LVIS_SELECTED) {
                 wchar_t buffer[260];
                 ListView_GetItemText(hLista, i, 1, buffer, 260);
+                std::wstring nomeProc(buffer);
+                // Salva prioridade original antes de alterar
+                if (prioridadeOriginal.find(nomeProc) == prioridadeOriginal.end()) {
+                    DWORD prioridadeAtual = NORMAL_PRIORITY_CLASS;
+                    HANDLE hProc = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, GetProcessIdByName(nomeProc.c_str()));
+                    if (hProc) {
+                        prioridadeAtual = GetPriorityClass(hProc);
+                        CloseHandle(hProc);
+                    }
+                    prioridadeOriginal[nomeProc] = prioridadeAtual;
+                }
                 bool ok = AlterarPrioridade(buffer, prioridade);
                 std::wstring status = ok ? LoadResString(IDS_MSG_PRIORIDADE_OK) : LoadResString(IDS_MSG_PRIORIDADE_ERRO);
                 ListView_SetItemText(hLista, i, 2, (LPWSTR)prioridadeStr.c_str()); // Prioridade
@@ -279,6 +316,41 @@ void TratarEventoBotao(HWND hwnd, WPARAM wParam) {
             SalvarLogParaArquivo(hLista);
             SalvarFavoritosArquivo(hLista);
         }
+        break;
+    }
+    case ID_BTN_REVERTER: {
+        HWND hLista = GetListaResultados(hwnd);
+        if (!hLista) break;
+        int count = ListView_GetItemCount(hLista);
+        int revertidos = 0;
+        for (int i = 0; i < count; ++i) {
+            if (ListView_GetItemState(hLista, i, LVIS_SELECTED) & LVIS_SELECTED) {
+                wchar_t buffer[260];
+                ListView_GetItemText(hLista, i, 1, buffer, 260);
+                std::wstring nomeProc(buffer);
+                auto it = prioridadeOriginal.find(nomeProc);
+                if (it != prioridadeOriginal.end()) {
+                    bool ok = AlterarPrioridade(buffer, it->second);
+                    std::wstring status = ok ? L"Prioridade revertida ⏪" : L"Falha ao reverter";
+                    // Atualiza ListView
+                    std::wstring priorStr;
+                    switch (it->second) {
+                        case IDLE_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_BAIXA); break;
+                        case NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_NORMAL); break;
+                        case HIGH_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ALTA); break;
+                        case REALTIME_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_TEMPO_REAL); break;
+                        case ABOVE_NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ACIMA); break;
+                        case BELOW_NORMAL_PRIORITY_CLASS: priorStr = LoadResString(IDS_PRIORIDADE_ABAIXO); break;
+                        default: priorStr = L"(?)"; break;
+                    }
+                    ListView_SetItemText(hLista, i, 2, (LPWSTR)priorStr.c_str());
+                    ListView_SetItemText(hLista, i, 3, (LPWSTR)status.c_str());
+                    ++revertidos;
+                }
+            }
+        }
+        std::wstring msg = L"Revertidos: " + std::to_wstring(revertidos);
+        MessageBoxW(hwnd, msg.c_str(), L"Reverter alterações", MB_OK | MB_ICONINFORMATION);
         break;
     }
     }

@@ -30,19 +30,37 @@ void SetFonteEmoji(HWND hWnd) {
     SendMessageW(hWnd, WM_SETFONT, (WPARAM)hFontEmoji, TRUE);
 }
 
-void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos) {
-    // Campo de texto (EDIT)
+// Subclasse para o campo de busca: permite buscar ao pressionar Enter
+LRESULT CALLBACK EditBuscaProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
+    if (msg == WM_GETDLGCODE) {
+        // Permite capturar Enter
+        return DLGC_WANTALLKEYS | CallWindowProc((WNDPROC)GetProp(hwnd, L"OldEditProc"), hwnd, msg, wParam, lParam);
+    }
+    if (msg == WM_KEYDOWN && wParam == VK_RETURN) {
+        HWND hwndParent = GetParent(hwnd);
+        // Simula clique no botão Buscar
+        SendMessage(hwndParent, WM_COMMAND, MAKELONG(ID_BTN_BUSCAR, BN_CLICKED), (LPARAM)hwnd);
+        return 0; // Não insere quebra de linha
+    }
+    return CallWindowProc((WNDPROC)GetProp(hwnd, L"OldEditProc"), hwnd, msg, wParam, lParam);
+}
+
+void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtnAtualizar, HWND& hBtnBuscar, HWND& hListResult, HWND& hEditEntrada, HWND& hComboPrioridade, HWND& hBtnAplicarPrioridade, HWND& hBtnSalvarLog, HWND& hCheckFavoritarTodos, HWND& hBtnReverter) {
+    // Campo de texto (EDIT) - linha única
     hEditEntrada = CreateWindowW(L"EDIT", L"",
-        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_MULTILINE,
-        20, 20, 450, 60,
+        WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+        20, 20, 450, 25,
         hwnd, (HMENU)ID_EDIT_ENTRADA, nullptr, nullptr);
 
+    // Subclasse o campo de busca para capturar Enter
+    SetProp(hEditEntrada, L"OldEditProc", (HANDLE)SetWindowLongPtr(hEditEntrada, GWLP_WNDPROC, (LONG_PTR)EditBuscaProc));
+
     // Botão Buscar (Unicode)
-    hBtnBuscar = CriarBotaoUnicode(hwnd, 480, 20, 110, 30, ID_BTN_BUSCAR, L"🔍 Buscar");
+    hBtnBuscar = CriarBotaoUnicode(hwnd, 480, 20, 110, 30, ID_BTN_BUSCAR, LoadResString(IDS_BTN_BUSCAR).c_str());
     SetFonteEmoji(hBtnBuscar);
 
     // Checkbox Favoritar todos com o mesmo nome (Unicode)
-    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", L"⭐ Favoritar grupo",
+    hCheckFavoritarTodos = CreateWindowW(L"BUTTON", LoadResString(IDS_CHECK_FAVORITAR_TODOS).c_str(),
         WS_CHILD | WS_VISIBLE | BS_AUTOCHECKBOX | BS_LEFTTEXT,
         480, 60, 220, 30,
         hwnd, (HMENU)ID_CHECK_FAVORITAR_TODOS, nullptr, nullptr);
@@ -54,23 +72,23 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
         WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST,
         20, 95, 200, 300,
         hwnd, (HMENU)ID_COMBO_PRIORIDADE, nullptr, nullptr);
-    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Baixa (IDLE)");
-    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Normal");
-    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Alta");
-    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Acima do normal");
-    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)L"Tempo real");
+    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)LoadResString(IDS_PRIORIDADE_BAIXA).c_str());
+    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)LoadResString(IDS_PRIORIDADE_NORMAL).c_str());
+    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)LoadResString(IDS_PRIORIDADE_ALTA).c_str());
+    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)LoadResString(IDS_PRIORIDADE_ACIMA).c_str());
+    SendMessageW(hComboPrioridade, CB_ADDSTRING, 0, (LPARAM)LoadResString(IDS_PRIORIDADE_TEMPO_REAL).c_str());
     SendMessageW(hComboPrioridade, CB_SETCURSEL, 2, 0); // seleciona "Alta" por padrão
 
     // Botão Aplicar Prioridade (Unicode)
-    hBtnAplicarPrioridade = CriarBotaoUnicode(hwnd, 230, 95, 150, 30, ID_BTN_APLICAR_PRIORIDADE, L"🆗 Aplicar Prioridade");
+    hBtnAplicarPrioridade = CriarBotaoUnicode(hwnd, 230, 95, 150, 30, ID_BTN_APLICAR_PRIORIDADE, LoadResString(IDS_BTN_APLICAR_PRIOR).c_str());
     SetFonteEmoji(hBtnAplicarPrioridade);
 
     // Botão Atualizar Processos (Unicode)
-    hBtnAtualizar = CriarBotaoUnicode(hwnd, 390, 95, 150, 30, ID_BTN_ATUALIZAR, L"🔃 Atualizar Processos");
+    hBtnAtualizar = CriarBotaoUnicode(hwnd, 390, 95, 150, 30, ID_BTN_ATUALIZAR, LoadResString(IDS_BTN_ATUALIZAR).c_str());
     SetFonteEmoji(hBtnAtualizar);
 
     // Botão Salvar Log (Unicode)
-    hBtnSalvarLog = CriarBotaoUnicode(hwnd, 550, 95, 150, 30, ID_BTN_SALVAR_LOG, L"📎 Salvar Log");
+    hBtnSalvarLog = CriarBotaoUnicode(hwnd, 550, 95, 150, 30, ID_BTN_SALVAR_LOG, LoadResString(IDS_BTN_SALVAR_LOG).c_str());
     SetFonteEmoji(hBtnSalvarLog);
 
     // Linha divisória visual
@@ -144,4 +162,8 @@ void CriarControlesJanela(HWND hwnd, HWND& hBtnAlta, HWND& hBtnBaixa, HWND& hBtn
     ListView_SetItemText(hListResult, 0, 2, (LPWSTR)exemploPrior.c_str());
     ListView_SetItemText(hListResult, 0, 3, (LPWSTR)exemploStatus.c_str());
     ListView_SetItemText(hListResult, 0, 4, (LPWSTR)exemploMem.c_str());
+
+    // Botão Reverter Alterações (Unicode)
+    hBtnReverter = CriarBotaoUnicode(hwnd, 20, 430, 200, 30, ID_BTN_REVERTER, LoadResString(IDS_BTN_REVERTER).c_str());
+    SetFonteEmoji(hBtnReverter);
 }

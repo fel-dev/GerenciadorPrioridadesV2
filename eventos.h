@@ -5,3 +5,4 @@
 #define ID_CHECK_AGRUPAR 5001
 
 void TratarEventoBotao(HWND hwnd, WPARAM wParam);
+DWORD GetProcessIdByName(const wchar_t* nomeProc);
